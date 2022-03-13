@@ -1,0 +1,200 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+	<!-- Required meta tags -->
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+
+	<title>Arknights Operator Cookbook</title>
+
+	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
+		integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+	<link href="./css/app.css" rel="stylesheet">
+
+	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
+		integrity="sha384-ka7Sk0Gln4gmtz2MlQnikT1wXgYsOg+OMhuP+IlRH9sENBO0LRn5q+8nbTov4+1p" crossorigin="anonymous"
+		defer></script>
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"
+		integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous" defer></script>
+
+	<script src="./js/upgrade-materials.js" defer></script>
+	<script src="./js/operators.js" defer></script>
+	<script src="./js/app.js" defer></script>
+
+</head>
+
+<body>
+	<div id="page-header">
+		<div style="flex-grow: 1;">
+			<h1>Arknights Operator Cookbook</h1>
+		</div>
+		<div>
+			<button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#helpModal">
+				<i class="bi bi-question-circle"></i>
+			</button>
+
+			<!-- Modal -->
+			<div class="modal fade" id="helpModal" tabindex="-1" aria-labelledby="helpModalLabel" aria-hidden="true">
+				<div class="modal-dialog modal-xl">
+					<div class="modal-content">
+						<div class="modal-header">
+							<h5 class="modal-title" id="helpModalLabel">About & Help</h5>
+							<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+						</div>
+						<div class="modal-body">
+							<h3>About</h3>
+							<p>
+								This is a tool to keep track of which Operators you want to grow and the materials needed for them
+								to be promoted. You can also input the materials you have in inventory to track progress while
+								the tool will highlight materials that can be crafted from ingredients, as well as which operators
+								can be promoted.
+							</p>
+							<h3>How to use</h3>
+							<div style="display: flex; flex-direction: row;">
+								<div style="flex-grow: 1; margin-right: 16px;">
+									<p><span style="font-size: 1.5em;">①</span> - Start typing in an operator's name</p>
+									<p><span style="font-size: 1.5em;">②</span> - Select which classes you want to see</p>
+									<p><span style="font-size: 1.5em;">③</span> - Select which operator rarity you want to see</p>
+									<p><span style="font-size: 1.5em;">④</span> - Operators that match your search will be listed here, click on them to add them to the list</p>
+								</div>
+								<div>
+									<a href="./img/arknights-cookbook-help-1.png" target="_blank">
+										<img src="./img/arknights-cookbook-help-1.png" width="480px"alt="">
+									</a>
+								</div>
+							</div>
+							<br>
+							<div style="display: flex; flex-direction: row;">
+								<div style="flex-grow: 1; margin-right: 16px;">
+									<p><span style="font-size: 1.5em;">①</span> - Click "Show/Hide materials" to toggle the materials list</p>
+									<p><span style="font-size: 1.5em;">②</span> - Set the operator's current Elite Rank</p>
+									<p><span style="font-size: 1.5em;">③</span> - Set the operator's current level</p>
+									<p><span style="font-size: 1.5em;">④</span> - Set the Elite Rank you want the operator to reach</p>
+									<p><span style="font-size: 1.5em;">⑤</span> - Set the level you want the operator to reach</p>
+									<p><span style="font-size: 1.5em;">⑥</span> - Set the amount of materials you have in inventory</p>
+									<p>
+										As you fill out the numbers, various materials or operators will be highlighted to show what you can do.
+									</p>
+									<p class="listRowComplete">
+										This means you have enough of that material to complete this list or the operator has met its Elite Rank and level goal
+									</p>
+									<p class="listRowCanComplete">
+										This means you have enough ingredients to craft the rest of the materials you need or the operator can be promoted
+									</p>
+									<p>
+										If you want to hide materials used for recipes, i.e, you just want to know what materials you need to promote
+										the operators, check the "Ignore materials from recipe" checkbox
+									</p>
+								</div>
+								<div>
+									<a href="./img/arknights-cookbook-help-2.png" target="_blank">
+										<img src="./img/arknights-cookbook-help-2.png" width="480px"alt="">
+									</a>
+								</div>
+							</div>
+							<p>
+								Please note this page saves what you've entered, but it won't carry across browsers or computers.
+							</p>
+							<h3>
+								Legal
+							</h3>
+							<p>
+								Arknights &copy; Hypergryph &copy; Yostar Limited
+							</p>
+						</div>
+						<div class="modal-footer">
+							<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+						</div>
+					</div>
+				</div>
+			</div>
+
+		</div>
+	</div>
+	<div class="container-fluid mainContainer">
+		<div class="row justify-content-center h-100">
+			<div class="col-md-3 h-100" style="overflow: auto;">
+				<p>Operator search field</p>
+				<div style="padding: 10px;">
+					<div class="input-group mb-3">
+						<span class="input-group-text" id="basic-addon1">Name</span>
+						<input id="name-input" type="text" class="form-control" placeholder="Operator Name">
+					</div>
+				</div>
+				<div id="classFilterSection" style="border-top: 2px solid #444; padding: 10px;">
+					<label class="form-check-label">Class</label>
+					<br>
+				</div>
+				<div id="rarityFilterSection" style="border-top: 2px solid #444; padding: 10px;">
+					<label class="form-check-label">Rarity</label>
+					<br>
+				</div>
+				<div class="overflow-auto" id="searchList">
+				</div>
+			</div>
+			<div id="recipeContainer" class="col-md-9 h-100">
+				<!-- <button id="testBtn" type="button" class="btn btn-sm btn-success">Test</button>
+				<button id="matListBtn" type="button" class="btn btn-sm btn-success">MatList</button> -->
+				<div id="recipeContainerHeader">
+					<button class="btn btn-primary" type="button" data-bs-toggle="collapse"
+						data-bs-target="#materialListContainer" aria-expanded="false"
+						aria-controls="materialListContainer">
+						Show/Hide materials
+					</button>
+				</div>
+				<div id="recipeContainerBody" style="height: 80%; overflow: auto;">
+					<button id="clearAllSelectedBtn" type="button" class="btn btn-sm btn-danger">Clear all</button>
+					<table id="selectedOpsTable" class="materialTableList">
+						<thead>
+							<tr>
+								<th scope="col"></th>
+								<th scope="col">Operator</th>
+								<th scope="col">Class</th>
+								<th scope="col">Rarity</th>
+								<th scope="col">Current Elite Rank</th>
+								<th scope="col">Current Level</th>
+								<th scope="col">Elite Rank Goal</th>
+								<th scope="col">Level Goal</th>
+								<th scope="col"></th>
+							</tr>
+							<tr style="border-top: 2px solid #DDD;">
+								<td colspan="100%"></td>
+							</tr>
+						</thead>
+					</table>
+					<div class="collapse" id="materialListContainer">
+						<h2>Materials Needed</h2>
+						<div class="form-check form-check-inline" style="padding-top: 8px; padding-bottom: 8px;">
+							<input class="form-check-input" type="checkbox" value="" id="ignoreRecipeMatsCheckbox">
+							<label class="form-check-label" for="ignoreRecipeMatsCheckbox">
+								Ignore materials from recipes
+							</label>
+						</div>
+						<div id="recipeListContainer">
+							<table id="recipeTable" class="materialTableList">
+								<thead>
+									<tr>
+										<th scope="col"></th>
+										<th scope="col">Material</th>
+										<th scope="col">Tier</th>
+										<th scope="col">In Inventory</th>
+										<th scope="col">Needed / Recipe Total</th>
+									</tr>
+									<tr style="border-top: 2px solid #DDD;">
+										<td colspan="100%"></td>
+									</tr>
+								</thead>
+							</table>
+						</div>
+					</div>
+				</div>
+
+			</div>
+		</div>
+	</div>
+
+</body>
+
+</html>

@@ -1,0 +1,127 @@
+html {
+	height: 100%;
+}
+
+body {
+	background: #333;
+	color: #DDD;
+	height: 100%;
+}
+
+input[type='number'] {
+	width: 80px;
+}
+
+a {
+	text-decoration: none;
+}
+
+/* Modal */
+.modal-content {
+	color: #333;
+}
+
+/* Search side of the page --------------------------------------------------*/
+#page-header {
+	height: 80px;
+	padding: 8px;
+	display: flex;
+	flex-direction: row;
+}
+
+.mainContainer {
+	height: calc(100% - 88px);
+}
+
+#searchList {
+	border-top: 2px solid #DDD;
+	padding: 10px;
+}
+
+.search-checkbox {
+	width: 128px;
+}
+
+.searchEntry {
+	cursor: pointer;
+	margin-top: 5px;
+	margin-bottom: 5px;
+	width: calc(100% - 8px);
+}
+
+.searchEntry:hover {
+	background-color: gold;
+	color: #333;
+}
+
+/* Recipe side of the page --------------------------------------------------*/
+#recipeContainer {
+	display: flex;
+	flex-flow: column;
+	height: 100%;
+}
+
+#recipeContainerHeader {
+	height: 48px;
+	margin: 8px;
+}
+
+#recipeContainerBody {
+	flex-grow : 1;
+}
+
+.materialTableList {
+	table-layout: fixed;
+	width: 100%;
+}
+
+.materialTableList > tbody > tr {
+	border-bottom: 1px solid #888;
+}
+
+.materialTableList>tbody>tr>td {
+	vertical-align: middle;
+	padding: 8px;
+}
+
+.materialTableList>tbody>tr>td:not(:first-child) {
+	width: calc(100%/8);
+}
+
+.materialTableList>thead>tr>th:nth-child(1) {
+	width: 72px;
+}
+
+#recipeTable>thead>tr>th:not(:first-child) {
+	width: calc(100% /4);
+}
+
+#selectedOpsTable>thead>tr>th:not(:first-child) {
+	width: calc(100% / 8);
+}
+
+.listRowComplete {
+	background-color: rgba(172, 255, 0, 0.5);
+}
+
+.listRowCanComplete {
+	background-color: rgba(45, 154, 255, 0.75);
+}
+
+#selectedOpsTable>tbody>tr>td {
+	vertical-align: middle;
+}
+
+#selectedOpsTable>tbody>tr>td:nth-child(1) {
+	width: 72px;
+}
+
+.materialIcon {
+	width: 64px;
+	height: 64px;
+	border-radius: 32px;
+
+	background-size: contain;
+	background-position: center center;
+	background-repeat: no-repeat;
+}
