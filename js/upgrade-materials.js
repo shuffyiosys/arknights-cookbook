@@ -8,8 +8,8 @@ class Material {
 class MaterialEntry {
 	constructor() {
 		this.has = 0;
-		this.haveLeft = 0;
 		this.needed = 0;
+		this.recipeTotal = 0;
 	}
 }
 

@@ -6,6 +6,7 @@ body {
 	background: #333;
 	color: #DDD;
 	height: 100%;
+	overflow: hidden;
 }
 
 input[type='number'] {
@@ -24,13 +25,13 @@ a {
 /* Search side of the page --------------------------------------------------*/
 #page-header {
 	height: 80px;
-	padding: 8px;
 	display: flex;
 	flex-direction: row;
 }
 
 .mainContainer {
 	height: calc(100% - 88px);
+	padding: 0px;
 }
 
 #searchList {
@@ -50,20 +51,19 @@ a {
 }
 
 .searchEntry:hover {
-	background-color: gold;
-	color: #333;
+	background-color: #555;
 }
 
 /* Recipe side of the page --------------------------------------------------*/
 #recipeContainer {
 	display: flex;
 	flex-flow: column;
-	height: 100%;
+	padding-right: 0px;
 }
 
 #recipeContainerHeader {
 	height: 48px;
-	margin: 8px;
+	margin-bottom: 8px;
 }
 
 #recipeContainerBody {
@@ -82,6 +82,10 @@ a {
 .materialTableList>tbody>tr>td {
 	vertical-align: middle;
 	padding: 8px;
+}
+
+.materialTableList>tbody>tr:hover {
+	background-color: #555;
 }
 
 .materialTableList>tbody>tr>td:not(:first-child) {

@@ -72,27 +72,8 @@ $(document).ready(() => {
 	});
 
 	$('#clearAllSelectedBtn').click(() => {
-		$('#selectedOpsTable > tbody').html('');
-		selectedOperatorList = {};
-		for (const materialName in upgradeMaterials) {
-			materialList[materialName] = new MaterialEntry();
-		}
-		for (let matTierNum = 1; matTierNum <= 5; matTierNum++) {
-			const htmlName = `tier${matTierNum}MatsList`
-			$(`#${htmlName}`).html('');
-		}
-		$('#ChipList').html('');
-		$('#ChipPackList').html('');
-		$('#DualchipList').html('');
+		clearRecipeList();
 		saveSettings();
-	})
-
-	// $('#testBtn').click(() => {
-	// 	console.log(selectedOperatorList)
-	// });
-
-	$('#matListBtn').click(() => {
-		console.log(materialList)
 	})
 
 	$('#selectedOperatorsTab').click(() => {
@@ -111,6 +92,16 @@ $(document).ready(() => {
 
 	$('#ignoreRecipeMatsCheckbox').change(() => {
 		switchRecipeList();
+	})
+
+	$('#deleteAllDataBtn').click(() => {
+		$('#name-input').val('');
+		$('#allRarityBtn').click();
+		$('#allClassesBtn').click();
+		clearRecipeList();
+		localStorage.removeItem('arknightsRecipeOperators');
+		localStorage.removeItem('arknightsRecipeMaterials');
+		localStorage.removeItem('arknightsRecipeGui');
 	})
 
 	loadSettings();
@@ -180,6 +171,21 @@ $(document).ready(() => {
 		$('div#searchList').html('')
 		filteredOps.forEach(createSearchListEntry);
 		saveSettings();
+	}
+
+	function clearRecipeList() {
+		selectedOperatorList = {};
+		for (const materialName in upgradeMaterials) {
+			materialList[materialName] = new MaterialEntry();
+		}
+		for (let matTierNum = 1; matTierNum <= 5; matTierNum++) {
+			const htmlName = `tier${matTierNum}MatsList`
+			$(`#${htmlName}`).html('');
+		}
+		$('#selectedOpsTable > tbody').html('');
+		$('#ChipList').html('');
+		$('#ChipPackList').html('');
+		$('#DualchipList').html('');
 	}
 
 	function createSearchListEntry(operator) {
@@ -293,8 +299,8 @@ $(document).ready(() => {
 				</td>
 				<td><img src="${classIconsPath}${entry.operator.getClass_toString()}.webp" alt="" height="48px">${entry.operator.getClass_toString()}</td>
 				<td>${entry.operator.getRarity_toString()}</td>
-				<td><input id="${htmlName}CurrentRankSpinner" type="number" min="0" max="${entry.getMaxRank()}" value="0"></td>
-				<td><input id="${htmlName}CurrentLevelSpinner" type="number" min="1" max="${entry.getMaxLevel()}" value="1"></td>
+				<td><input id="${htmlName}CurrentRankSpinner" type="number" min="0" max="${entry.getMaxRank()}" value="${entry.rank}"></td>
+				<td><input id="${htmlName}CurrentLevelSpinner" type="number" min="1" max="${entry.getMaxLevel()}" value="${entry.level}"></td>
 				<td><input id="${htmlName}GoalRankSpinner" type="number" min="0" max="${maxRank}" value="${maxRank}"></td>
 				<td><input id="${htmlName}GoalLevelSpinner" type="number" min="1" max="${maxLevel}" value="${maxLevel}"></td>
 				<td><button id="${htmlName}RemoveBtn" type="button" class="btn btn-sm btn-danger" title="Remove this operator">X</button></td>
@@ -343,15 +349,6 @@ $(document).ready(() => {
 				updateGoals(entry);
 			}
 		});
-
-		// let rows = $('tr', `#operator${entry.operator.rarity}List`);
-		// rows.sort((a, b) => {
-		// 	let keyA = $('td > span', a).text();
-		//   let keyB = $('td > span', b).text();
-		//   return (keyA > keyB) ? 1 : 0;
-		// })
-		// $(`#operator${entry.operator.rarity}List`).html('');
-		// $(`#operator${entry.operator.rarity}List`).append(rows);
 	}
 
 	/* Upgrade Material functions -----------------------------------------------*/
@@ -366,16 +363,16 @@ $(document).ready(() => {
 	 */
 	function updateMaterialRecipeList(material, amount, multiplier = 1) {
 		if (material in materialList == false) {
-			console.log(material);
+			console.log(`Could not find this material: ${material}`);
 		}
-		if (material === "") {
+		else if (material === "") {
 			return;
 		}
+		materialList[material].recipeTotal += (amount * multiplier);
 		materialList[material].needed += (amount * multiplier);
-		materialList[material].haveLeft += (amount * multiplier);
 
-		if (materialList[material].needed < 0) {
-			materialList[material].needed = 0;
+		if (materialList[material].recipeTotal < 0) {
+			materialList[material].recipeTotal = 0;
 		}
 
 		addMaterialToRecipeList(material);
@@ -385,11 +382,10 @@ $(document).ready(() => {
 				updateMaterialRecipeList(ingredient, recipe[ingredient], amount * multiplier);
 			}
 		}
-
 	}
 
 	function updateMaterialInventoryList(material, amount) {
-		materialList[material].haveLeft += amount;
+		materialList[material].needed += amount;
 
 		const recipe = upgradeMaterials[material].recipe;
 		for (const ingredient in recipe) {
@@ -400,8 +396,8 @@ $(document).ready(() => {
 	function switchRecipeList() {
 		/* Zero out everything of what's needed and have left */
 		for (const materialName in materialList) {
+			materialList[materialName].recipeTotal = 0;
 			materialList[materialName].needed = 0;
-			materialList[materialName].haveLeft = 0;
 		}
 
 		/* Update using the operator's mat lists, the update function will ignore the recipes in there */
@@ -409,27 +405,25 @@ $(document).ready(() => {
 			const operatorData = selectedOperatorList[operatorName].operator;
 			for (const material in operatorData.e1_mats) {
 				updateMaterialRecipeList(material, operatorData.e1_mats[material]);
-				materialList[material].haveLeft = materialList[material].needed - materialList[material].has;
-				if (materialList[material].haveLeft < 0) {
-					materialList[material].haveLeft = 0;
+				materialList[material].needed = materialList[material].recipeTotal - materialList[material].has;
+				if (materialList[material].needed < 0) {
+					materialList[material].needed = 0;
 				}
 			}
-
 			for (const material in operatorData.e2_mats) {
 				updateMaterialRecipeList(material, operatorData.e2_mats[material]);
-				materialList[material].haveLeft = materialList[material].haveLeft - materialList[material].has;
-				if (materialList[material].haveLeft < 0) {
-					materialList[material].haveLeft = 0;
+				materialList[material].needed = materialList[material].needed - materialList[material].has;
+				if (materialList[material].needed < 0) {
+					materialList[material].needed = 0;
 				}
 			}
-
 		}
 		updateRecipeList();
 	}
 
 	function addMaterialToRecipeList(material) {
 		const htmlName = material.replaceAll(' ', '');
-		if ($(`#${htmlName}MatRow`).length != 0 || materialList[material].needed == 0) {
+		if ($(`#${htmlName}MatRow`).length != 0 || materialList[material].recipeTotal == 0) {
 			return;
 		}
 
@@ -448,7 +442,6 @@ $(document).ready(() => {
 		const tier = upgradeMaterials[material].tier;
 
 		let matBackground = tierBackgroundColors[tier];
-		// let appendTo = '> table > tbody';
 		let appendTo = '';
 		let tierName = `${tier}`;
 
@@ -482,8 +475,8 @@ $(document).ready(() => {
 			/* Cap the actual values used to what's needed and no more, this
 			   helps prevent higher tier mats from affecting lower tier 
 			   counts if the higher tier is complete. */
-			else if (amount > materialList[material].needed) {
-				amount = materialList[material].needed;
+			else if (amount > materialList[material].recipeTotal) {
+				amount = materialList[material].recipeTotal;
 			}
 			const diff = materialList[material].has - amount;
 			materialList[material].has = amount;
@@ -503,14 +496,15 @@ $(document).ready(() => {
 		for (const material in materialList) {
 			const htmlName = material.replaceAll(' ', '');
 
-			if (materialList[material].needed == 0) {
+			if (materialList[material].recipeTotal == 0) {
 				$(`#${htmlName}MatRow`).remove();
 				continue;
 			}
-
-			const haveLeft = (materialList[material].haveLeft <= 0) ? 0 : materialList[material].haveLeft;
-			$(`td#${htmlName}MatNeeded`).html(`${haveLeft} / ${materialList[material].needed}`);
-			if (haveLeft == 0) {
+			const needed = materialList[material].recipeTotal - materialList[material].has;
+			if (needed < 0) { needed = 0; }
+			$(`td#${htmlName}MatNeeded`).html(`${needed} / ${materialList[material].recipeTotal}`);
+			
+			if (needed == 0) {
 				$(`#${htmlName}MatRow`).removeClass('listRowCanComplete');
 				$(`#${htmlName}MatRow`).addClass('listRowComplete');
 				
@@ -520,7 +514,7 @@ $(document).ready(() => {
 				let canCraft = true;
 				let count = 0;
 				for (const ingredient in upgradeMaterials[material].recipe) {
-					const amountNeeded = upgradeMaterials[material].recipe[ingredient] * haveLeft;
+					const amountNeeded = upgradeMaterials[material].recipe[ingredient] * needed;
 					canCraft = canCraft & (amountNeeded <= materialList[ingredient].has);
 					count++;
 				}
@@ -555,6 +549,8 @@ $(document).ready(() => {
 			$(`tr#${htmlName}SelectedRow`).removeClass('listRowComplete');
 			$(`tr#${htmlName}SelectedRow`).removeClass('listRowCanComplete');
 		}
+
+		saveSettings();
 	}
 
 	function updateMaterialsList(oldRank, newRank, operatorData) {
@@ -593,7 +589,6 @@ $(document).ready(() => {
 	}
 
 	function updateMaterialsList_GoalRank(oldRank, newRank, operatorData) {
-		console.log("Updating goal rank", oldRank, newRank)
 		// Going up
 		// From E0 to E1 - Add E1 mats
 		// From E1 to E2 - Add E2 mats
@@ -660,44 +655,42 @@ $(document).ready(() => {
 
 		localStorage.setItem('arknightsRecipeOperators', JSON.stringify(selectedOperatorList));
 		localStorage.setItem('arknightsRecipeMaterials', JSON.stringify(materialList));
-		localStorage.setItem('arknightsRecipeGui', JSON.stringify(guiSettings))
+		localStorage.setItem('arknightsRecipeGui', JSON.stringify(guiSettings));
 	}
 
 	function loadSettings() {
 		let operators = JSON.parse(localStorage.getItem('arknightsRecipeOperators'));
 		let materials = JSON.parse(localStorage.getItem('arknightsRecipeMaterials'));
 		let guiSettings = JSON.parse(localStorage.getItem('arknightsRecipeGui'));
-
 		if (guiSettings !== null) {
 			$('#ignoreRecipeMatsCheckbox').prop('checked', guiSettings.ignoreMatRecipes);
 			$('#name-input').val(guiSettings.lastNameSearched);
 
 			for(let i = 0; i < guiSettings.classesSelected.length; i++) {
 				const htmlName = classNames[i].toLowerCase();
-				console.log(htmlName, guiSettings.classesSelected[i])
 				$(`#${htmlName}Checkbox`).prop('checked', guiSettings.classesSelected[i]);
 			}
 	
 			for (let rarityNum = 1; rarityNum <= 6; rarityNum++) {
 				const htmlName = `rarity${rarityNum}`;
-				console.log(htmlName, guiSettings.raritySelected[rarityNum])
 				$(`#${htmlName}Checkbox`).prop('checked', guiSettings.raritySelected[rarityNum - 1]);
 			}
 		}
 
 		if (operators !== null && materials !== null) {
-			console.log('Loading saved data', operators, materials)
 			materialList = materials;
 			
 			for(const material in materialList) {
 				addMaterialToRecipeList(material);
 			}
 			for(const operatorName in operators) {
+				const operatorEntry = operators[operatorName];
 				let filteredOps = operatorList.filter(operator => {
 					let nameSearchRegex = new RegExp(`^${operatorName}$`, 'i');
 					return nameSearchRegex.test(operator.name);
 				})
-				selectedOperatorList[operatorName] = new OperatorEntry(filteredOps[0], 1, 0);
+				
+				selectedOperatorList[operatorName] = new OperatorEntry(filteredOps[0], operatorEntry.level, operatorEntry.rank);
 				buildSelectedOperatorList(operatorName);
 			}
 			updateRecipeList();
