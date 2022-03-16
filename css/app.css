@@ -22,16 +22,50 @@ a {
 	color: #333;
 }
 
-/* Search side of the page --------------------------------------------------*/
 #page-header {
-	height: 80px;
+	height: 64px;
+	background-color: #333;
+}
+
+.headerFlexRow {
 	display: flex;
 	flex-direction: row;
 }
 
 .mainContainer {
-	height: calc(100% - 88px);
+	margin-top: 64px;
+	height: calc(100% - 64px);
 	padding: 0px;
+}
+
+#toggleSearchBtn {
+	margin-left: 16px;
+}
+
+@media screen and (max-width: 992px) {
+	#page-header {
+		height: 88px;
+	}
+
+	.mainContainer {
+		margin-top: 92px;
+	}
+
+	body {
+		height: initial;
+		overflow: auto;
+	}
+}
+
+@media screen and (min-width: 992px) {
+	#toggleSearchBtn {
+		display: none;
+	}
+}
+
+/* Search side of the page --------------------------------------------------*/
+.searchSection {
+	border-top: 2px solid #444;
 }
 
 #searchList {
@@ -40,7 +74,7 @@ a {
 }
 
 .search-checkbox {
-	width: 128px;
+	width: 150px;
 }
 
 .searchEntry {
@@ -68,6 +102,11 @@ a {
 
 #recipeContainerBody {
 	flex-grow : 1;
+}
+
+#materialListContainer {
+	margin-top: 32px;
+	border-top: 2px solid #DDD;
 }
 
 .materialTableList {

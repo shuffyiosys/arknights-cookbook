@@ -40,7 +40,7 @@ $(document).ready(() => {
 			<div class="form-check form-check-inline search-checkbox">
 				<input class="form-check-input" type="checkbox" value="" id="${htmlName}Checkbox" checked>
 				<label class="form-check-label" for="${htmlName}Checkbox">
-					(${rarityNum}) ${stars}
+					${rarityNum} ${stars}
 				</label>
 			</div>`
 		$('#rarityFilterSection').append(html);
@@ -87,7 +87,17 @@ $(document).ready(() => {
 		localStorage.removeItem('arknightsRecipeOperators');
 		localStorage.removeItem('arknightsRecipeMaterials');
 		localStorage.removeItem('arknightsRecipeGui');
-	})	
+	});
+
+	$('#toggleSearchBtn').click(() => {
+		$('#searchContainer').toggle();
+	})
+
+	$(window).resize(() => {
+		if ($(window).width() >= 992) {
+			$('#searchContainer').show();
+		}
+	});
 
 	loadSettings();
 
