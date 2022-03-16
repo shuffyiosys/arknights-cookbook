@@ -76,33 +76,18 @@ $(document).ready(() => {
 		saveSettings();
 	})
 
-	$('#selectedOperatorsTab').click(() => {
-		$('#selectedOperatorsPage').show();
-		$('#recipeListPage').hide();
-		$('#selectedOperatorsTab > a').addClass('active');
-		$('#recipeListTab > a').removeClass('active');
-	})
-
-	$('#recipeListTab').click(() => {
-		$('#recipeListPage').show();
-		$('#selectedOperatorsPage').hide();
-		$('#recipeListTab > a').addClass('active');
-		$('#selectedOperatorsTab > a').removeClass('active');
-	})
-
 	$('#ignoreRecipeMatsCheckbox').change(() => {
 		switchRecipeList();
 	})
 
 	$('#deleteAllDataBtn').click(() => {
-		$('#name-input').val('');
 		$('#allRarityBtn').click();
 		$('#allClassesBtn').click();
 		clearRecipeList();
 		localStorage.removeItem('arknightsRecipeOperators');
 		localStorage.removeItem('arknightsRecipeMaterials');
 		localStorage.removeItem('arknightsRecipeGui');
-	})
+	})	
 
 	loadSettings();
 
@@ -361,13 +346,47 @@ $(document).ready(() => {
 	 * This recursively looks into the material's recipes to update the lower tier
 	 * items needd to craft it.
 	 */
-	function updateMaterialRecipeList(material, amount, multiplier = 1) {
-		if (material in materialList == false) {
-			console.log(`Could not find this material: ${material}`);
+
+	function calculateRecipe() {
+		for(const materialName in materialList) {
+			const material = materialList[materialName];
+			const htmlName = materialName.replaceAll(' ', '');
+			let newAmount = parseInt($(`input#${htmlName}InventorySpinner`).val());
+
+			/* Account for bad parse (reset it to whatever is in the list) */
+			if (isNaN(newAmount) == true) {
+				newAmount = material.has;
+				$(`input#${htmlName}InventorySpinner`).val(newAmount);
+			}
+			material.has = newAmount;
+			material.needed = material.recipeTotal - material.has;
+			if (material.needed < 0) { 
+				material.needed == 0; 
+			}
+			else if (material.needed > material.recipeTotal) { 
+				material.needed == material.recipeTotal; 
+			}
+
+			if (newAmount > material.recipeTotal) {
+				newAmount = material.recipeTotal;
+			}
+			const recipe = upgradeMaterials[materialName].recipe;
+			for (const ingredient in recipe) {
+				updateMaterialInventoryList(ingredient, recipe[ingredient] * newAmount);
+			}
 		}
-		else if (material === "") {
+		updateRecipeList();
+		for (const operatorName in selectedOperatorList) {
+			updateGoals(selectedOperatorList[operatorName]);
+		}
+	}
+
+	function updateMaterialRecipeList(material, amount, multiplier = 1) {
+		if (material in materialList == false || material === "") {
+			console.log(`Could not find this material: ${material}`);
 			return;
 		}
+
 		materialList[material].recipeTotal += (amount * multiplier);
 		materialList[material].needed += (amount * multiplier);
 
@@ -384,12 +403,13 @@ $(document).ready(() => {
 		}
 	}
 
-	function updateMaterialInventoryList(material, amount) {
-		materialList[material].needed += amount;
+	function updateMaterialInventoryList(materialName, amount) {
+		const material = materialList[materialName]
+		material.needed -= amount;
 
-		const recipe = upgradeMaterials[material].recipe;
+		const recipe = upgradeMaterials[materialName].recipe;
 		for (const ingredient in recipe) {
-			updateMaterialInventoryList(ingredient, (recipe[ingredient] * amount));
+			updateMaterialInventoryList(ingredient, recipe[ingredient] * amount);
 		}
 	}
 
@@ -402,28 +422,36 @@ $(document).ready(() => {
 
 		/* Update using the operator's mat lists, the update function will ignore the recipes in there */
 		for (const operatorName in selectedOperatorList) {
-			const operatorData = selectedOperatorList[operatorName].operator;
-			for (const material in operatorData.e1_mats) {
-				updateMaterialRecipeList(material, operatorData.e1_mats[material]);
-				materialList[material].needed = materialList[material].recipeTotal - materialList[material].has;
-				if (materialList[material].needed < 0) {
-					materialList[material].needed = 0;
+			const operatorEntry = selectedOperatorList[operatorName]; 
+			const operatorData = operatorEntry.operator;
+
+			if (operatorEntry.rank < 1) {
+				for (const material in operatorData.e1_mats) {
+					updateMaterialRecipeList(material, operatorData.e1_mats[material]);
+					materialList[material].needed = materialList[material].recipeTotal - materialList[material].has;
+					if (materialList[material].needed < 0) {
+						materialList[material].needed = 0;
+					}
 				}
 			}
-			for (const material in operatorData.e2_mats) {
-				updateMaterialRecipeList(material, operatorData.e2_mats[material]);
-				materialList[material].needed = materialList[material].needed - materialList[material].has;
-				if (materialList[material].needed < 0) {
-					materialList[material].needed = 0;
+
+			if (operatorEntry.rank < 2) {
+				for (const material in operatorData.e2_mats) {
+					updateMaterialRecipeList(material, operatorData.e2_mats[material]);
+					materialList[material].needed = materialList[material].needed - materialList[material].has;
+					if (materialList[material].needed < 0) {
+						materialList[material].needed = 0;
+					}
 				}
 			}
 		}
 		updateRecipeList();
 	}
 
-	function addMaterialToRecipeList(material) {
-		const htmlName = material.replaceAll(' ', '');
-		if ($(`#${htmlName}MatRow`).length != 0 || materialList[material].recipeTotal == 0) {
+	function addMaterialToRecipeList(materialName) {
+		const material = materialList[materialName];
+		const htmlName = materialName.replaceAll(' ', '');
+		if ($(`#${htmlName}MatRow`).length != 0 || material.recipeTotal == 0) {
 			return;
 		}
 
@@ -438,8 +466,8 @@ $(document).ready(() => {
 			105: `#FFCA08`
 		}
 
-		const fileName = material.replaceAll(' ', '_');
-		const tier = upgradeMaterials[material].tier;
+		const fileName = materialName.replaceAll(' ', '_');
+		const tier = upgradeMaterials[materialName].tier;
 
 		let matBackground = tierBackgroundColors[tier];
 		let appendTo = '';
@@ -448,7 +476,7 @@ $(document).ready(() => {
 		if (tier < 100) {
 			appendTo = `#tier${tier}MatsList`;
 		} else {
-			let chipPackWords = material.split(' ');
+			let chipPackWords = materialName.split(' ');
 			chipPackWords.shift();
 			tierName = chipPackWords.join(' ');
 			appendTo = `#${chipPackWords.join('')}List`;
@@ -457,52 +485,31 @@ $(document).ready(() => {
 		const matHtml =
 			`<tr id="${htmlName}MatRow">
 				<td><div class="materialIcon" style="background-image: url('${matIconsPath}${fileName}.webp'); background-color: ${matBackground}"></div></td>
-				<td>${material}</td>
+				<td>${materialName}</td>
 				<td>${tierName}</td>
-				<td><input id="${htmlName}InventorySpinner" type="number" min="0" max="999" value="${materialList[material].has}">
+				<td><input id="${htmlName}InventorySpinner" type="number" min="0" max="999" value="${material.has}">
 				<td id="${htmlName}MatNeeded"></td>
 			</tr>`;
 		$(appendTo).append(matHtml);
 
 		$(`input#${htmlName}InventorySpinner`).change(() => {
-			let amount = parseInt($(`input#${htmlName}InventorySpinner`).val());
-
-			/* Account for bad parse (reset it to whatever is in the list) */
-			if (isNaN(amount) == true) {
-				amount = materialList[material].has;
-				$(`input#${htmlName}InventorySpinner`).val(amount);
-			}
-			/* Cap the actual values used to what's needed and no more, this
-			   helps prevent higher tier mats from affecting lower tier 
-			   counts if the higher tier is complete. */
-			else if (amount > materialList[material].recipeTotal) {
-				amount = materialList[material].recipeTotal;
-			}
-			const diff = materialList[material].has - amount;
-			materialList[material].has = amount;
-
-			updateMaterialInventoryList(material, diff);
-			updateRecipeList();
-
-			for (const operatorName in selectedOperatorList) {
-				updateGoals(selectedOperatorList[operatorName]);
-			}
+			calculateRecipe();
 		})
 	}
 
 	function updateRecipeList() {
 		saveSettings();
-			
-		for (const material in materialList) {
-			const htmlName = material.replaceAll(' ', '');
+		for (const materialName in materialList) {
+			const material = materialList[materialName];
+			const htmlName = materialName.replaceAll(' ', '');
 
-			if (materialList[material].recipeTotal == 0) {
+			if (material.recipeTotal == 0) {
 				$(`#${htmlName}MatRow`).remove();
 				continue;
 			}
-			const needed = materialList[material].recipeTotal - materialList[material].has;
-			if (needed < 0) { needed = 0; }
-			$(`td#${htmlName}MatNeeded`).html(`${needed} / ${materialList[material].recipeTotal}`);
+			const needed = (material.needed < 0) ? 0 : material.needed;
+
+			$(`td#${htmlName}MatNeeded`).html(`${needed} / ${material.recipeTotal}`);
 			
 			if (needed == 0) {
 				$(`#${htmlName}MatRow`).removeClass('listRowCanComplete');
@@ -513,8 +520,8 @@ $(document).ready(() => {
 
 				let canCraft = true;
 				let count = 0;
-				for (const ingredient in upgradeMaterials[material].recipe) {
-					const amountNeeded = upgradeMaterials[material].recipe[ingredient] * needed;
+				for (const ingredient in upgradeMaterials[materialName].recipe) {
+					const amountNeeded = (upgradeMaterials[materialName].recipe[ingredient] * material.needed);
 					canCraft = canCraft & (amountNeeded <= materialList[ingredient].has);
 					count++;
 				}

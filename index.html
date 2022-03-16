@@ -138,7 +138,8 @@
 						aria-controls="materialListContainer">
 						Show/Hide materials
 					</button>
-					<button type="button" class="btn btn-danger" style="float: right;" data-bs-toggle="modal" data-bs-target="#deleteAllModal">
+
+					<button type="button" class="btn btn-sm btn-danger" style="float: right; margin-left: 8px;" data-bs-toggle="modal" data-bs-target="#deleteAllModal">
 						<i class="bi bi-trash"></i>
 					</button>
 					<div class="modal fade" id="deleteAllModal" tabindex="-1" aria-labelledby="deleteAllModalLabel" aria-hidden="true">
@@ -158,9 +159,9 @@
 							</div>
 						</div>
 					</div>
+					<button id="clearAllSelectedBtn" type="button" class="btn btn-sm btn-danger" style="float: right;">Clear all operators</button>
 				</div>
 				<div id="recipeContainerBody" style="height: 80%; overflow: auto;">
-					<button id="clearAllSelectedBtn" type="button" class="btn btn-sm btn-danger">Clear all operators</button>
 					<table id="selectedOpsTable" class="materialTableList">
 						<thead>
 							<tr>
