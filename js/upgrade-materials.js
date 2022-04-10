@@ -97,4 +97,9 @@ const upgradeMaterials = {
 	'Specialist Dualchip': new Material(105, {'Specialist Chip Pack': 2}),
 	'Supporter Dualchip': new Material(105, {'Supporter Chip Pack': 2}),
 	'Vanguard Dualchip': new Material(105, {'Vanguard Chip Pack': 2}),
+
+	// Skills
+	'Skill Summary 1': new Material(202, {}),
+	'Skill Summary 2': new Material(203, {}),
+	'Skill Summary 3': new Material(204, {}),
 };

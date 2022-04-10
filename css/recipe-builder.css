@@ -1,0 +1,14 @@
+.material-counter {
+	background: rgba(0, 0, 0, 0.75);
+	position: absolute;
+	text-align: center;
+	min-width: 16px;
+	max-width: 20px;
+	bottom: 0;
+	right: 0;
+	margin: 0px;
+}
+
+#recipeList div{
+	height: 64px;
+}

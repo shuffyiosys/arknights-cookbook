@@ -95,54 +95,23 @@ class OperatorEntry {
 	}
 
 	getMaxLevel(rank=0) {
-		if(this.operator.rarity < 3) {
-			return 30;
+		const rank0_levels = [30, 30, 40, 45, 50, 50];
+		const rank1_levels = [ 0,  0, 55, 60, 70, 80];
+		const rank2_levels = [ 0,  0,  0, 70, 80, 90];
+		let maxLevel = rank0_levels[this.operator.rarity - 1];
+
+		if (rank === 2) {
+			maxLevel = rank2_levels[this.operator.rarity - 1];
 		}
-		else if (this.operator.rarity == 4) {
-			if (rank == 2) {
-				return 70;
-			}
-			else if (rank == 1) {
-				return 55;
-			}
-			else {
-				return 45;
-			}
+		else if (rank === 1) {
+			maxLevel = rank1_levels[this.operator.rarity - 1];
 		}
-		else if (this.operator.rarity == 5) {
-			if (rank == 2) {
-				return 80;
-			}
-			else if (rank == 1) {
-				return 70;
-			}
-			else {
-				return 50;
-			}
-		}
-		else if (this.operator.rarity == 6) {
-			if (rank == 2) {
-				return 90;
-			}
-			else if (rank == 1) {
-				return 80;
-			}
-			else {
-				return 50;
-			}
-		}
+		return maxLevel;
 	}
 
 	getMaxRank() {
-		if(this.operator.rarity > 3) {
-			return 2;
-		}
-		else if (this.operator.rarity == 3) {
-			return 1;
-		}
-		else {
-			return 0;
-		}
+		const maxRanks = [0, 0, 1, 2, 2, 2];
+		return maxRanks[this.operator.rarity - 1];
 	}
 
 	getGoalMet() {
@@ -415,3 +384,106 @@ const operatorList = [
 	new Operator("W",               CLASS.SNIPER,       6, {"Orirock Cube": 12, "Polyester": 5}, {"Bipolar Nanoflake": 4, "Keton Colloid": 7}),
 	new Operator("Weedy",           CLASS.SPECIALIST,   6, {"Device": 6, "Sugar": 3},           {"D32 Steel": 4, "Manganese Trihydrate": 6}),
 ];
+
+class SkillRecipe {
+	constructor(recipes) {
+		this.recipes = recipes;
+	}
+
+	getSummaries(rarity, level) {
+		const skillSummaries = [
+			[1, 1, 1, 1, 1, 2, 0,  0,  0],
+			[2, 2, 3, 3, 3, 4, 2,  4,  4],
+			[4, 4, 6, 6, 6, 6, 5,  6, 10],
+			[5, 5, 8, 8, 8, 8, 8, 12, 15]
+		]
+
+		if (rarity < 4 || level > 10) {
+			return -1;
+		}
+		else {
+			return skillSummaries[rarity - 3][level - 2];
+		}
+	}
+};
+
+
+const skillUpgradeDb = {
+	"Andachiel": new SkillRecipe({"3": { "Orirock": 2 }, "4": { "Sugar": 1 }, "5": { "Polyester": 2 }, "6": { "RMA70-12": 1 }, "7": { "Orirock Cluster": 2 }}),
+	"Ansel":    new SkillRecipe({ "3": { "Oriron Shard": 1 }, "4": { "Polyketon": 1 }, "5": { "Device": 1 }, "6": { "Polyester Pack": 2 }, "7": { "Oriron Cluster": 3 }}),
+	"Beagle":   new SkillRecipe({ "3": { "Diketon": 1 }, "4": { "Device": 1 }, "5": { "Orirock Cube": 3 }, "6": { "Manganese Ore": 1 }, "7": { "Grindstone": 1 }}),
+	"Cardigan": new SkillRecipe({ "3": { "Oriron Shard":1} , "4": {"Polyketon":1}, "5": { "Device":1 },"6":{"Loxic Kohl":1},"7":{"Manganese Ore":2}}),
+	"Catapult": new SkillRecipe({ "3": { "Ester": 1 }, "4": { "Oriron": 1 }, "5": { "Polyketon": 2 }, "6": { "Manganese Ore": 1 }, "7": { "Grindstone": 1 }}),
+	"Fang":     new SkillRecipe({ "3": { "Orirock": 2 }, "4": { "Sugar": 1 }, "5": { "Polyester": 2 }, "6": { "Oriron Cluster": 1 }, "7": { "Aketon": 2 }}),
+	"Hibiscus": new SkillRecipe({ "3": { "Ester": 1 }, "4": { "Oriron": 1 }, "5": { "Polyketon": 2 }, "6": { "Sugar Pack": 2 }, "7": { "Polyester Pack": 2 }}),
+	"Kroos":    new SkillRecipe({ "3": { "Damaged Device": 1 }, "4": { "Orirock Cube": 2 }, "5": { "Sugar": 2 }, "6": { "Grindstone": 1 }, "7": { "RMA70-12": 1 }}),
+	"Lava":     new SkillRecipe({ "3": { "Sugar Substitute": 1 }, "4": { "Polyester": 1 }, "5": { "Oriron": 2 }, "6": { "Orirock Cluster": 2 }, "7": { "Sugar Pack": 2 }}),
+	"Melantha": new SkillRecipe({ "3": { "Ester": 1 }, "4": { "Oriron": 1 }, "5": { "Polyketon": 2 }, "6": { "Integrated Device": 1 }, "7": { "Loxic Kohl": 2 }}),
+	"Midnight": new SkillRecipe({ "3": { "Oriron Shard": 1 }, "4": { "Polyketon": 1 }, "5": { "Device": 1 }, "6": { "Grindstone": 1 }, "7": { "RMA70-12": 1 }}),
+	"Orchid":   new SkillRecipe({ "3": { "Orirock": 2 }, "4": { "Sugar": 1 }, "5": { "Polyester": 2 }, "6": { "Integrated Device": 1 }, "7": { "Loxic Kohl": 2 }}),
+	"Plume":    new SkillRecipe({ "3": { "Damaged Device": 1 }, "4": { "Orirock Cube": 2 }, "5": { "Sugar": 2 }, "6": { "Aketon": 1 }, "7": { "Integrated Device": 1 }}),
+	"Popukar":  new SkillRecipe({ "3": { "Sugar Substitute": 1 }, "4": { "Polyester": 1 }, "5": { "Oriron": 2 }, "6": { "Loxic Kohl": 2 }, "7": { "Manganese Ore": 2 }}),
+	"Spot":     new SkillRecipe({ "3": { "Diketon": 1 }, "4": { "Device": 1 }, "5": { "Orirock Cube": 3 }, "6": { "RMA70-12": 1 }, "7": { "Orirock Cluster": 2 }}),
+	"Steward":  new SkillRecipe({ "3": { "Diketon": 1 }, "4": { "Device": 1 }, "5": { "Orirock Cube": 3 }, "6": { "Oriron Cluster": 1 }, "7": { "Aketon": 2 }}),
+	"Vanilla":  new SkillRecipe({ "3": { "Sugar Substitute": 1 }, "4": { "Polyester": 1 }, "5": { "Oriron": 2 }, "6": { "Aketon": 1 }, "7": { "Integrated Device": 1 }}),
+
+    "Aciddrop":     new SkillRecipe({ "3": {  "Orirock": 5 }, "4": {  "Sugar": 2 }, "5": {  "Polyester": 3 }, "6": {  "Aketon": 2 }, "7": {  "Coagulating Gel": 2 }, 
+        "11": {  "Grindstone Pentahydrate": 1,  "Loxic Kohl": 4 }, "12": {  "Keton Colloid": 2,  "Polymerized Gel": 2 }, "13": {  "Bipolar Nanoflake": 2,  "Polymerized Gel": 2 }, 
+        "21": {  "White Horse Kohl": 1,  "Aketon": 4 }, "22": {  "Incandescent Alloy Block": 2,  "RMA70-24": 2 }, "23": {  "Bipolar Nanoflake": 2,  "Orirock Concentration": 2 }}),
+    "Ambriel":      new SkillRecipe({ "3": {  "Oriron": 3 }, "4": {  "Polyketon": 2 }, "5": {  "Device": 2 }, "6": {  "Coagulating Gel": 2 }, "7": {  "Incandescent Alloy": 3 }, 
+        "11": {  "Manganese Trihydrate": 1,  "Integrated Device": 3 }, "12": {  "Incandescent Alloy Block": 2,  "RMA70-24": 2 }, "13": {  "Polymerization Preparation": 2,  "White Horse Kohl": 2 }, 
+        "21": {  "Grindstone Pentahydrate": 1,  "Loxic Kohl": 4 }, "22": {  "Polymerized Gel": 2,  "Orirock Concentration": 3 }, "23": {  "D32 Steel": 2,  "Oriron Block": 2 }}),
+    "Arene":        new SkillRecipe({ "3": {  "Diketon": 3 }, "4": {  "Device": 1 }, "5": {  "Orirock Cube": 4 }, "6": {  "Incandescent Alloy": 2 }, "7": {  "RMA70-12": 2 }, 
+        "11": {  "White Horse Kohl": 1,  "Aketon": 4 }, "12": {  "Incandescent Alloy Block": 2,  "RMA70-24": 2 }, "13": {  "D32 Steel": 2,  "Polymerized Gel": 2 }, "21": {  "Keton Colloid": 1,  "Coagulating Gel": 3 }, 
+        "22": {  "Orirock Concentration": 2,  "Grindstone Pentahydrate": 3 }, "23": {  "Polymerization Preparation": 2,  "Polymerized Gel": 2 }}),
+    "Beanstalk":    new SkillRecipe({ "3": {  "Ester": 4 }, "4": {  "Oriron": 2 }, "5": {  "Polyketon": 3 }, "6": {  "Integrated Device": 2 }, "7": {  "Loxic Kohl": 3 }, 
+        "11": {  "Grindstone Pentahydrate": 1,  "Loxic Kohl": 4 }, "12": {  "Polymerized Gel": 2,  "Orirock Concentration": 3 }, "13": {  "D32 Steel": 2,  "Polymerized Gel": 2 }, 
+        "21": {  "Orirock Concentration": 1,  "Grindstone": 4 }, "22": {  "Incandescent Alloy Block": 2,  "RMA70-24": 2 }, "23": {  "Crystalline Electronic Unit": 2,  "Orirock Concentration": 2 }}),
+    "Beehunter":    new SkillRecipe({ "3": {  "Damaged Device": 2 }, "4": {  "Orirock Cube": 2 }, "5": {  "Sugar": 3 }, "6": {  "Aketon": 2 }, "7": {  "Integrated Device": 2 }, 
+        "11": {  "White Horse Kohl": 1,  "Aketon": 4 }, "12": {  "Grindstone Pentahydrate": 2,  "White Horse Kohl": 3 }, "13": {  "D32 Steel": 2,  "Orirock Concentration": 2 }, "21": {  "Manganese Trihydrate": 1,  "Integrated Device": 3 }, 
+        "22": {  "RMA70-24": 2,  "Manganese Trihydrate": 2 }, "23": {  "Polymerization Preparation": 2,  "White Horse Kohl": 2 }}),
+    "Bubble":       new SkillRecipe(),
+    "Click":        new SkillRecipe(),
+    "Conviction":   new SkillRecipe(),
+    "Courier":      new SkillRecipe(),
+    "Cuora":        new SkillRecipe(),
+    "Cutter":       new SkillRecipe(),
+    "Deepcolor":    new SkillRecipe(),
+    "Dobermann":    new SkillRecipe(),
+    "Dur-nar":      new SkillRecipe(),
+    "Earthspirit":  new SkillRecipe(),
+    "Estelle":      new SkillRecipe(),
+    "Ethan":        new SkillRecipe(),
+    "Frostleaf":    new SkillRecipe(),
+    "Gavial":       new SkillRecipe(),
+    "Gitano":       new SkillRecipe(),
+    "Gravel":       new SkillRecipe(),
+    "Greyy":        new SkillRecipe(),
+    "Gummy":        new SkillRecipe(),
+    "Haze":         new SkillRecipe(),
+    "Indigo":       new SkillRecipe(),
+    "Jackie":       new SkillRecipe(),
+    "Jaye":         new SkillRecipe(),
+    "Jessica":      new SkillRecipe(),
+    "Matoimaru":    new SkillRecipe(),
+    "Matterhorn":   new SkillRecipe(),
+    "May":          new SkillRecipe(),
+    "Meteor":       new SkillRecipe(),
+    "Mousse":       new SkillRecipe(),
+    "Myrrh":        new SkillRecipe(),
+    "Myrtle":       new SkillRecipe(),
+    "Perfumer":     new SkillRecipe(),
+    "Pinecone":     new SkillRecipe(),
+    "Podenco":      new SkillRecipe(),
+    "Pudding":      new SkillRecipe(),
+    "Purestream":   new SkillRecipe(),
+    "Roberta":      new SkillRecipe(),
+    "Rope":         new SkillRecipe(),
+    "Scavenger":    new SkillRecipe(),
+    "Shaw":         new SkillRecipe(),
+    "ShiraYuki":    new SkillRecipe(),
+    "Sussurro":     new SkillRecipe(),
+    "Utage":        new SkillRecipe(),
+    "Vermeil":      new SkillRecipe(),
+    "Vigna":        new SkillRecipe(),
+}
