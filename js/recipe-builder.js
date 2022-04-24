@@ -8,6 +8,44 @@ $(document).ready(() => {
 	let selectedLevel = 3;
 	let levelMats = {}
 
+	$('#matList').keyup(event => {
+		if(event.originalEvent.key === "w") {
+			$(`#lvl-${selectedLevel}-list`).css('background', 'none')
+			if (selectedLevel === 11) {
+				selectedLevel = 7;
+			}
+			else if (selectedLevel === 21) {
+				selectedLevel = 13;
+			}
+			else if (selectedLevel === 31) {
+				selectedLevel = 23;
+			}
+			else if (selectedLevel > 3) {
+				selectedLevel --;
+			}
+			$(`#lvl-${selectedLevel}-list`).css('background', 'rgba(172, 255, 0, 0.5)');
+		}
+		else if (event.originalEvent.key === "s") {
+			$(`#lvl-${selectedLevel}-list`).css('background', 'none')
+			if (selectedLevel === 7) {
+				selectedLevel = 11;
+			}
+			else if (selectedLevel === 13) {
+				selectedLevel = 21;
+			}
+			else if (selectedLevel === 23) {
+				selectedLevel = 31;
+			}
+			else if (selectedLevel < 33) {
+				selectedLevel ++;
+			}
+			$(`#lvl-${selectedLevel}-list`).css('background', 'rgba(172, 255, 0, 0.5)');
+		}
+		else if (event.originalEvent.key === "r") {
+			resetList();
+		}
+	})
+
 	levels.forEach(level => {
 		let html = `<div id="lvl-${level}-list" style="display:flex; flex-direction: row;"><div>`
 
@@ -22,7 +60,17 @@ $(document).ready(() => {
 		$(`#lvl-${level}-list`).click(changeLevel)
 	})
 
-	$('#resetButton').click(() => {
+	$('#resetButton').click(resetList)
+
+	$('#copyButton').click(() => {
+		navigator.clipboard.writeText(JSON.stringify(levelMats, null, 1).replaceAll('\n', '')).then(function() {
+			console.log('Async: Copying to clipboard was successful!');
+		  }, function(err) {
+			console.error('Async: Could not copy text: ', err);
+		  });
+	})
+
+	function resetList() {
 		levelMats = {};
 
 		levels.forEach(level => {
@@ -32,15 +80,7 @@ $(document).ready(() => {
 		$(`#lvl-3-list`).css('background', 'rgba(172, 255, 0, 0.5)');
 		selectedLevel = 3;
 		$('#recipeOutput').text(JSON.stringify(levelMats, null, 4))
-	})
-
-	$('#copyButton').click(() => {
-		navigator.clipboard.writeText(JSON.stringify(levelMats, null, 1).replaceAll('\n', '')).then(function() {
-			console.log('Async: Copying to clipboard was successful!');
-		  }, function(err) {
-			console.error('Async: Could not copy text: ', err);
-		  });
-	})
+	}
 
 	function changeLevel() {
 		const idWords = this.id.split('-');
@@ -80,6 +120,7 @@ $(document).ready(() => {
 			background-image: url('${matIconsPath}${fileName}.webp'); 
 			background-color: ${matBackground}"></div>`
 		$('div#matList').append(html);
+		$('div#matList > div')[materialCount].oncontextmenu = materialOnRightClick;
 		$('div#matList > div')[materialCount++].onclick = materialOnClick;
 
 
@@ -88,8 +129,7 @@ $(document).ready(() => {
 				levelMats[selectedLevel] = {};
 			}
 			if ((materialName in levelMats[selectedLevel]) == false && 
-				(selectedLevel >= 7 && Object.keys(levelMats[selectedLevel]).length >= 2) == false &&
-				(selectedLevel < 7 && Object.keys(levelMats[selectedLevel]).length >= 1) == false) {
+				(Object.keys(levelMats[selectedLevel]).length >= 2) == false ) {
 
 				levelMats[selectedLevel][materialName] = 1
 				const idx = Object.keys(levelMats[selectedLevel]).length - 1;
@@ -106,9 +146,24 @@ $(document).ready(() => {
 			$('#recipeOutput').text(JSON.stringify(levelMats, null, 4))
 		}
 
+		function materialOnRightClick(event) {
+			event.preventDefault();
+			if ((materialName in levelMats[selectedLevel]) == true){
+				levelMats[selectedLevel][materialName] --;
+				$(`div#skill-lvl-${selectedLevel} > div > p.${fileName}`).text(`${levelMats[selectedLevel][materialName]}`)
+				if (levelMats[selectedLevel][materialName] === 0) {
+					delete levelMats[selectedLevel][materialName];
+					$(`div#skill-lvl-${selectedLevel} > div.${fileName}`).remove();
+				}
+				if (Object.keys(levelMats[selectedLevel]).length == 0) {
+					delete levelMats[selectedLevel];
+				}
+				$('#recipeOutput').text(JSON.stringify(levelMats, null, 4))
+			}
+		}
+		
 		function recipeOnClick() {
 			const materialName = this.classList[1].replaceAll('_', ' ')
-			console.log(materialName)
 			delete levelMats[selectedLevel][materialName];
 			$(this).remove();
 			$('#recipeOutput').text(JSON.stringify(levelMats, null, 4))
