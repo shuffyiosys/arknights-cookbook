@@ -24,6 +24,7 @@ $(document).ready(() => {
 			filterResults();
 		})
 	});
+	
 	$('#classFilterSection').append(`<br><button id="allClassesBtn" type="button" class="btn btn-sm btn-secondary">Select all</button>`);
 	$('#allClassesBtn').click(() => {
 		classNames.forEach(className => {

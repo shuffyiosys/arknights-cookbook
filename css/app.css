@@ -63,6 +63,62 @@ a {
 	}
 }
 
+.inner-flexbox {
+	display: flex; 
+	flex-direction: row;
+}
+
+.op-entry-card {
+	padding: 0;
+	margin-top: 8px;
+	margin-bottom: 8px;
+	border-radius: 6px;
+	overflow: hidden;
+	flex-shrink: 0;
+}
+
+.op-entry-row {
+	margin: 0;
+	font-size: 1em;
+}
+
+.op-card-header {
+	background: #555;
+	cursor: pointer;
+}
+
+.op-card-content {
+	background: #AAA;
+	color: #111; 
+}
+
+div.stats-card {
+	background: #DDD; 
+	padding: 10px;
+	margin: 0;
+}
+
+div.stats-card label {
+	width: 60px;
+}
+
+div.stats-card input {
+	width: 56px;
+	height: 24px;
+}
+
+div.op-entry-card > div:nth-child(2) div{
+	padding: 4px;
+}
+
+div.col-sm-4 > div > div.stats-card {
+	width: 50%;
+}
+
+div.col-sm-8 > div > div.stats-card {
+	width: 25%;
+}
+
 /* Search side of the page --------------------------------------------------*/
 .searchSection {
 	border-top: 2px solid #444;
@@ -92,7 +148,6 @@ a {
 #recipeContainer {
 	display: flex;
 	flex-flow: column;
-	padding-right: 0px;
 }
 
 #recipeContainerHeader {
@@ -162,8 +217,9 @@ a {
 .materialIcon {
 	width: 64px;
 	height: 64px;
+	min-width: 64px; 
+	margin-right: 12px;
 	border-radius: 32px;
-
 	background-size: contain;
 	background-position: center center;
 	background-repeat: no-repeat;

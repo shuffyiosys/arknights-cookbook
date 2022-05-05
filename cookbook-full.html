@@ -20,7 +20,9 @@
 		integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous" defer></script>
 	<script src="./js/upgrade-materials.js" defer></script>
 	<script src="./js/operators.js" defer></script>
-	<script src="./js/app.js" defer></script>
+	<script src="./js/full-cookbook.js" defer></script>
+	<script src="./js/search-bar.js" defer></script>
+	<script src="./js/full-app.js" defer></script>
 
 </head>
 
@@ -81,78 +83,162 @@
 				</div>
 
 
-				<div class="container-fluid" style="padding: 0;">
-					<div class="row gx-1 justify-content-center" style="margin: 0; font-size: 1em;">
-						<div class="col-lg-2 inner-flexbox">
+				<div class="container-fluid op-entry-card">
+					<div class="row gx-1 justify-content op-entry-row">
+						<div class="col-10 inner-flexbox" >
+							<div class="materialIcon"style="background-image: url('./img/op-icons/W_icon.webp'); background-color: #F88E18; "></div>
+							<div>Skadi the Corrupting Heart<br>6 ★★★★★★</div>
+							<div><img src="./img/class-icons/Sniper.webp" alt="" height="48px">Sniper</div>
+						</div>
+						<div class="col-2">
+							<button type="button" class="btn btn-sm btn-danger" style="float:right;">X</button>
+						</div>
+					</div>
+					<div class="row justify-content op-entry-row" style="display:none">
+						<div class="col-2">
+							<div class="stats-card">
+								<p>Elite Rank</p>
+								<label>Current</label>
+								<input type="number" min="0" max="2" value="0">
+								<br>
+								<label>Goal </label>
+								<input type="number" min="0" max="2" value="0">
+							</div>
+
+						</div>
+						<div class="col-2">
+							<div class="stats-card">
+								<p>Level</p>
+								<label>Current</label>
+								<input type="number" min="1" max="50" value="1">
+								<br>
+								<label>Goal</label>
+								<input type="number" min="1" max="50" value="1">
+							</div>
+
+						</div>
+						<div class="col-2">
+							<div class="stats-card">
+								<p>Skill Level</p>
+								<label>Current</label>
+								<input type="number" min="1" max="50" value="1">
+								<br>
+								<label>Goal</label>
+								<input type="number" min="1" max="50" value="1">
+							</div>
+						</div>
+						<div class="col-2">
+							<div class="stats-card">
+								<p>King of Hearts</p>
+								<label>Current</label>
+								<input type="number" min="1" max="50" value="1">
+								<br>
+								<label>Goal</label>
+								<input type="number" min="1" max="50" value="1">
+							</div>
+						</div>
+						<div class="col-2">
+							<div class="stats-card">
+								<p>Jack in the Box</p>
+								<label>Current</label>
+								<input type="number" min="1" max="50" value="1">
+								<br>
+								<label>Goal</label>
+								<input type="number" min="1" max="50" value="1">
+							</div>
+						</div>
+						<div class="col-2">
+							<div class="stats-card">
+								<p>D12</p>
+								<label>Current</label>
+								<input type="number" min="1" max="50" value="1">
+								<br>
+								<label>Goal</label>
+								<input type="number" min="1" max="50" value="1">
+							</div>
+						</div>
+					</div>
+				</div>
+				<div class="container-fluid op-entry-card">
+					<div class="row gx-1 justify-content op-entry-row op-card-header" style="cursor: pointer;" onclick="$('#new-stats-2').toggle()">
+						<div class="col-10 inner-flexbox" >
 							<div class="materialIcon"
 								style="min-width: 64px; background-image: url('./img/op-icons/W_icon.webp'); background-color: #F88E18; margin-right: 12px;">
 							</div>
 							<div>Skadi the Corrupting Heart<br>6 ★★★★★★</div>
 							<div><img src="./img/class-icons/Sniper.webp" alt="" height="48px">Sniper</div>
 						</div>
-						<div class="col-lg-4" style="display: flex; flex-direction: column;">
-							<div style="margin-bottom: 0.25em;">
-								<label style="width: 120px;" for="">Current</label>
-								<input type="number" min="0" max="2" value="0" style="width: 48px; height: 24px; margin-right: 16px;">
-								<label style="width: 96px;" for="">Goal</label>
-								<input type="number" min="0" max="2" value="0" style="width: 48px; height: 24px;">
-							</div>
-							<div style="margin-bottom: 0.25em;">
-								<label style="width: 120px;" for="">Current</label>
-								<input type="number" min="1" max="50" value="1"	style="width: 48px; height: 24px; margin-right: 16px;">
-								<label style="width: 96px;" for="">Goal</label>
-								<input type="number" min="1" max="50" value="1"	style="width: 48px; height: 24px;">
-							</div>
-							<div>
-								<label style="width: 120px;" for="">Current</label>
-								<input type="number" min="1" max="50" value="1" style="width: 48px; height: 24px; margin-right: 16px;">
-								<label style="width: 96px;" for="">Goal</label>
-								<input type="number" min="1" max="50" value="1"	style="width: 48px; height: 24px;">
-							</div>
+						<div class="col-2">
+							<button type="button" class="btn btn-sm btn-danger" style="float:right;" onclick="removeOperator(event)">X</button>
 						</div>
-						<div class="col-lg-2">
-							<label for="">King of Hearts</label><br>
-							<label for="">Current</label><input type="number" min="0" max="2" value="0"
-								style="width: 48px; height: 24px;"><br>
-							<label for="">Goal</label><input type="number" min="1" max="50" value="1"
-								style="width: 48px; height: 24px;"><br>
+					</div>
+					<div id="new-stats-2" class="row justify-content op-entry-row op-card-content" >
+						<div class="col-sm-4">
+							<label>Experience Growth</label>
+							<div style="display: flex; flex-direction: row;">
+								<div class="stats-card">
+									<p>Elite Rank</p>
+									<label>Current</label>
+									<input type="number" min="0" max="2" value="0">
+									<br>
+									<label>Goal </label>
+									<input type="number" min="0" max="2" value="0">
+								</div>
+								<div class="stats-card">
+									<p>Level</p>
+									<label>Current</label>
+									<input type="number" min="1" max="50" value="1">
+									<br>
+									<label>Goal</label>
+									<input type="number" min="1" max="50" value="1">
+								</div>
+							</div>
+
 						</div>
-						<div class="col-lg-2">
-							<label for="">Jack in the Box</label><br>
-							<label for="">Current</label><input type="number" min="0" max="2" value="0"
-								style="width: 48px; height: 24px;"><br>
-							<label for="">Goal</label><input type="number" min="1" max="50" value="1"
-								style="width: 48px; height: 24px;"><br>
-						</div>
-						<div class="col-lg-2">
-							<label for="">D12</label><br>
-							<label for="">Current</label><input type="number" min="0" max="2" value="0"
-								style="width: 48px; height: 24px;"><br>
-							<label for="">Goal</label><input type="number" min="1" max="50" value="1"
-								style="width: 48px; height: 24px;"><br>
+						<div class="col-sm-8">
+							<label>Skill Growth</label>
+							<div style="display: flex; flex-direction: row;">
+								<div class="stats-card">
+									<p>Level</p>
+									<label>Current</label>
+									<input type="number" min="1" max="50" value="1">
+									<br>
+									<label>Goal</label>
+									<input type="number" min="1" max="50" value="1">
+								</div>
+								<div class="stats-card">
+									<p>King of Hearts</p>
+									<label>Current</label>
+									<input type="number" min="1" max="50" value="1">
+									<br>
+									<label>Goal</label>
+									<input type="number" min="1" max="50" value="1">
+								</div>
+								<div class="stats-card">
+									<p>Jack in the Box</p>
+									<label>Current</label>
+									<input type="number" min="1" max="50" value="1">
+									<br>
+									<label>Goal</label>
+									<input type="number" min="1" max="50" value="1">
+								</div>
+								<div class="stats-card">
+									<p>D12</p>
+									<label>Current</label>
+									<input type="number" min="1" max="50" value="1">
+									<br>
+									<label>Goal</label>
+									<input type="number" min="1" max="50" value="1">
+								</div>
+							</div>
 						</div>
 					</div>
 				</div>
 
 				<div id="recipeContainerBody" style="height: 80%; overflow: auto;">
-					<table id="selectedOpsTable" class="materialTableList">
-						<thead>
-							<tr>
-								<th scope="col"></th>
-								<th scope="col">Operator</th>
-								<th scope="col">Class</th>
-								<th scope="col">Rarity</th>
-								<th scope="col">Current Elite Rank</th>
-								<th scope="col">Current Level</th>
-								<th scope="col">Elite Rank Goal</th>
-								<th scope="col">Level Goal</th>
-								<th scope="col"></th>
-							</tr>
-							<tr style="border-top: 2px solid #DDD;">
-								<td colspan="100%"></td>
-							</tr>
-						</thead>
-					</table>
+					<div id="operators-list">
+
+					</div>
 					<div class="collapse show" id="materialListContainer">
 						<h2>Materials Needed</h2>
 						<div class="form-check form-check-inline" style="padding-top: 8px; padding-bottom: 8px;">
