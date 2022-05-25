@@ -1,3 +1,5 @@
+"use strict";
+
 class Material {
 	constructor(tier, recipe) {
 		this.tier = tier;
@@ -103,3 +105,177 @@ const upgradeMaterials = {
 	'Skill Summary 2': new Material(203, {}),
 	'Skill Summary 3': new Material(204, {}),
 };
+
+const RecipeListModule = function () {
+	let materialList = {};
+
+	function init() {
+		for (let matTierNum = 1; matTierNum <= 5; matTierNum++) {
+			$(`#recipeTable`).append(`<tbody id="tier${matTierNum}MatsList"></tbody>`);
+		}
+		$(`#recipeTable`).append(`<tbody id="ChipList"></tbody>`);
+		$(`#recipeTable`).append(`<tbody id="ChipPackList"></tbody>`);
+		$(`#recipeTable`).append(`<tbody id="DualchipList"></tbody>`);
+
+		$('#ignoreRecipeMatsCheckbox').change(() => {
+			switchRecipeList();
+		});
+
+		for (const materialName in upgradeMaterials) {
+			materialList[materialName] = new MaterialEntry();
+		}
+	}
+
+	function createMaterialEntry(materialName) {
+		const material = materialList[materialName];
+		const htmlName = materialName.replaceAll(' ', '');
+		if ($(`#${htmlName}MatRow`).length != 0 || material.recipeTotal == 0) {
+			return;
+		}
+
+		const tierBackgroundColors = {
+			1: `#888`,
+			2: `#DBE537`,
+			3: `#03B1F4`,
+			4: `#D5C5D8`,
+			5: `#FFCA08`,
+			103: `#03B1F4`,
+			104: `#D5C5D8`,
+			105: `#FFCA08`
+		}
+
+		const fileName = materialName.replaceAll(' ', '_');
+		const tier = upgradeMaterials[materialName].tier;
+
+		let matBackground = tierBackgroundColors[tier];
+		let appendTo = '';
+		let tierName = `${tier}`;
+
+		if (tier < 100) {
+			appendTo = `#tier${tier}MatsList`;
+		} else {
+			let chipPackWords = materialName.split(' ');
+			chipPackWords.shift();
+			tierName = chipPackWords.join(' ');
+			appendTo = `#${chipPackWords.join('')}List`;
+		}
+
+		const matHtml =
+			`<tr id="${htmlName}MatRow">
+				<td><div class="materialIcon" style="background-image: url('${matIconsPath}${fileName}.webp'); background-color: ${matBackground}"></div></td>
+				<td>${materialName}</td>
+				<td>${tierName}</td>
+				<td><input id="${htmlName}InventorySpinner" type="number" min="0" max="999" value="${material.has}">
+				<td id="${htmlName}MatNeeded"></td>
+			</tr>`;
+		$(appendTo).append(matHtml);
+
+		$(`input#${htmlName}InventorySpinner`).change(() => {
+			// calculateRecipe();
+		})
+	}
+
+	function addMaterialToRecipe(material, amount, multiplier = 1) {
+		if (material in materialList == false || material === "") {
+			console.log(`Could not find this material: ${material}`);
+			return;
+		}
+
+		materialList[material].recipeTotal += (amount * multiplier);
+
+		if (materialList[material].recipeTotal < 0) {
+			materialList[material].recipeTotal = 0;
+		}
+
+		createMaterialEntry(material);
+		if ($('#ignoreRecipeMatsCheckbox').prop('checked') == false) {
+			const recipe = upgradeMaterials[material].recipe;
+			for (const ingredient in recipe) {
+				addMaterialToRecipe(ingredient, recipe[ingredient], amount * multiplier);
+			}
+		}
+	}
+
+	function addMaterialToInventory(material, amount, multiplier = 1) {
+		if (material in materialList == false || material === "") {
+			console.log(`Could not find this material: ${material}`);
+			return;
+		}
+
+		materialList[material].has += (amount * multiplier);
+
+		if (materialList[material].has < 0) {
+			materialList[material].has = 0;
+		}
+
+		createMaterialEntry(material);
+		if ($('#ignoreRecipeMatsCheckbox').prop('checked') == false) {
+			const recipe = upgradeMaterials[material].recipe;
+			for (const ingredient in recipe) {
+				addMaterialToInventory(ingredient, recipe[ingredient], amount * multiplier);
+			}
+		}
+	}
+
+	function updateRecipeList() {
+		for (const materialName in materialList) {
+			const material = materialList[materialName];
+			const htmlName = materialName.replaceAll(' ', '');
+
+			if (material.recipeTotal == 0) {
+				$(`#${htmlName}MatRow`).remove();
+				continue;
+			}
+			let needed = material.recipeTotal - material.has;
+			needed = (needed < 0) ? 0 : needed;
+
+			$(`td#${htmlName}MatNeeded`).html(`${needed} / ${material.recipeTotal}`);
+			
+			if (needed == 0) {
+				$(`#${htmlName}MatRow`).removeClass('listRowCanComplete');
+				$(`#${htmlName}MatRow`).addClass('listRowComplete');
+				
+			} else if ($('#ignoreRecipeMatsCheckbox').prop('checked') == false) {
+				$(`#${htmlName}MatRow`).removeClass('listRowComplete');
+
+				let canCraft = true;
+				let count = 0;
+				for (const ingredient in upgradeMaterials[materialName].recipe) {
+					const amountNeeded = (upgradeMaterials[materialName].recipe[ingredient] * needed);
+					canCraft = canCraft & (amountNeeded <= materialList[ingredient].has);
+					count++;
+				}
+
+				if (count > 0 && canCraft == true) {
+					$(`#${htmlName}MatRow`).addClass('listRowCanComplete');
+				} else {
+					$(`#${htmlName}MatRow`).removeClass('listRowCanComplete');
+				}
+			}
+		}
+	}
+
+	function clearRecipeList() {
+		selectedOperatorList = {};
+		for (const materialName in upgradeMaterials) {
+			materialList[materialName] = new MaterialEntry();
+		}
+		for (let matTierNum = 1; matTierNum <= 5; matTierNum++) {
+			const htmlName = `tier${matTierNum}MatsList`
+			$(`#${htmlName}`).html('');
+		}
+		$('#selectedOpsTable > tbody').html('');
+		$('#ChipList').html('');
+		$('#ChipPackList').html('');
+		$('#DualchipList').html('');
+	}
+
+	return {
+		init: init,
+		add: addMaterialToRecipe,
+		addToInventory: addMaterialToInventory,
+		clear: clearRecipeList,
+		update: updateRecipeList,
+		get: () => {return materialList}
+	}
+}();

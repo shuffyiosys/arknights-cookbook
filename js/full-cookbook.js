@@ -1,52 +1,13 @@
 "use strict";
 
-let fullCookbook = function () {
+let OperatorListFullModule = function () {
+
 	let selectedOperatorList = {};
-	let materialList = {};
+	let recipeModule;
 
-	function init() {
-		for (let matTierNum = 1; matTierNum <= 5; matTierNum++) {
-			$(`#recipeTable`).append(`<tbody id="tier${matTierNum}MatsList"></tbody>`);
-		}
-		$(`#recipeTable`).append(`<tbody id="ChipList"></tbody>`);
-		$(`#recipeTable`).append(`<tbody id="ChipPackList"></tbody>`);
-		$(`#recipeTable`).append(`<tbody id="DualchipList"></tbody>`);
-
-		$('#ignoreRecipeMatsCheckbox').change(() => {
-			switchRecipeList();
-		})
-	
-		$('#deleteAllDataBtn').click(() => {
-			$('#allRarityBtn').click();
-			$('#allClassesBtn').click();
-			clearRecipeList();
-			localStorage.removeItem('arknightsRecipeOperators');
-			localStorage.removeItem('arknightsRecipeMaterials');
-			localStorage.removeItem('arknightsRecipeGui');
-		});
-	}
-
-	function clearRecipeList() {
-		selectedOperatorList = {};
-		for (const materialName in upgradeMaterials) {
-			materialList[materialName] = new MaterialEntry();
-		}
-		for (let matTierNum = 1; matTierNum <= 5; matTierNum++) {
-			const htmlName = `tier${matTierNum}MatsList`
-			$(`#${htmlName}`).html('');
-		}
-		$('#selectedOpsTable > tbody').html('');
-		$('#ChipList').html('');
-		$('#ChipPackList').html('');
-		$('#DualchipList').html('');
-	}
-
-	function loadSettings() {
-
-	}
-
-	function saveSettings() {
-
+	function init(inRecipeModule) {
+		loadSettings();
+		recipeModule = inRecipeModule;
 	}
 
 	function addOperatorToList(operator) {
@@ -58,16 +19,12 @@ let fullCookbook = function () {
 		buildSelectedOperatorList(operator.name);
 
 		/* Ingredients to add */
-		// for (const material in operator.e1_mats) {
-		// 	updateMaterialRecipeList(material, operator.e1_mats[material]);
-		// }
-
-		// for (const material in operator.e2_mats) {
-		// 	updateMaterialRecipeList(material, operator.e2_mats[material]);
-		// }
+		updateMaterials(operator.e1_mats)
+		updateMaterials(operator.e2_mats)
 
 		// updateGoals(selectedOperatorList[operator.name]);
 		// updateRecipeList();
+		recipeModule.update();
 	}
 
 	function removeOperatorFromList(operator) {
@@ -77,29 +34,24 @@ let fullCookbook = function () {
 		$(`tr#${htmlName}SelectedRow`).remove();
 		delete selectedOperatorList[operator.name];
 
-		// for (const material in operator.e2_mats) {
-		// 	updateMaterialRecipeList(material, -operator.e2_mats[material]);
-		// }
+		console.log('Removing materials for operator')
 
-		// for (const material in operator.e1_mats) {
-		// 	updateMaterialRecipeList(material, -operator.e1_mats[material]);
-		// }
-
-		// updateRecipeList();
+		updateMaterials(operator.e2_mats, -1);
+		updateMaterials(operator.e1_mats, -1);
+		recipeModule.update();
 	}
 
-	function buildStatCard(title, opName, currentMax, goalMax, current=0, goal=0) {
+	function buildStatCard(title, opName, min, max) {
 		let htmlTitle = title.replaceAll(' ', '-').replaceAll('"','').toLowerCase();
 		let html = 
 			`<div id="${opName}-${htmlTitle}" class="stats-card">
 				<p>${title}</p>
 				<label>Current</label>
-				<input type="number" min="0" max="${currentMax}" value="${current}">
+				<input type="number" min="${min}" max="${max}" value="${min}"/>
 				<br>
 				<label>Goal </label>
-				<input type="number" min="0" max="${goalMax}" value="${goal}">
+				<input type="number" min="${min}" max="${max}" value="${max}"/>
 			</div>`;
-
 		return html;
 	}
 
@@ -112,15 +64,16 @@ let fullCookbook = function () {
 
 		const rarityBackgrounds = ['#FFF', '#FFF', '#E1FF00', '#26A4FF', '#CBBAFF', '#FFE97F', '#F88E18' ]
 		let htmlNameRegex = new RegExp(/[\(\)\\\.']/, 'g');
-		let htmlName = operatorName.replaceAll(' ', '-');
+		let htmlName = operatorName.replaceAll(' ', '-').replaceAll("'",'-');
 		htmlName = htmlName.replaceAll(htmlNameRegex, '');
 
 		let iconName = getIconName(operatorName);
 		let rarityBackground = rarityBackgrounds[entry.operator.rarity];
 		let gamePressName = operatorName.toLowerCase().replace(/'| the|\./g, '').replaceAll(' ', '-');
+		const divId = `${entry.operator.rarity}-${htmlName}-card`
 
 		let html = 
-			`<div id="${htmlName}-card" class="container-fluid op-entry-card">
+			`<div id="${divId}" class="container-fluid op-entry-card">
 				<div class="row gx-1 justify-content op-entry-row op-card-header">
 					<div class="col-10 inner-flexbox" >
 						<div class="materialIcon" style="background-image: url('${opIconsPath}${iconName}_icon.webp'); background-color: ${rarityBackground}"></div>
@@ -144,147 +97,221 @@ let fullCookbook = function () {
 					<label>Experience Growth</label>
 					<div style="display: flex; flex-direction: row;">`
 
-		html += buildStatCard('Elite Rank', operatorName, 2, 2, 0, 2);
-		html += buildStatCard('Level', operatorName, entry.getMaxLevel(0), entry.getMaxLevel(0), 0, entry.getMaxLevel(0));
+		html += buildStatCard('Elite Rank', operatorName, 0, 2);
+		html += buildStatCard('Level', operatorName, 1, entry.getMaxLevel(0));
 		html += `
 			</div></div>
 				<div class="col-sm-8">
 					<label>Skill Growth</label>
 					<div style="display: flex; flex-direction: row;">`
-		html += buildStatCard('Skill Level', operatorName, 7, 7);
+		html += buildStatCard('Skill Level', operatorName, 1, 7);
 		
-		const skillNames = skillUpgradeDb[operatorName].names;
-		const numSkills = skillNames.length;
-		for (let idx = 0; idx < numSkills; idx++) {
-			html += buildStatCard(skillUpgradeDb[operatorName].names[idx], operatorName, 3, 3);
+		let numSkills = 0;
+		if (operatorName in skillUpgradeDb) {
+			const skillNames = skillUpgradeDb[operatorName].names;
+			numSkills = skillNames.length;
+			for (let idx = 0; idx < numSkills; idx++) {
+				html += buildStatCard(skillUpgradeDb[operatorName].names[idx], operatorName, 1, 3);
+			}
 		}
 		html += `</div></div>`
 
 		$(`#operators-list`).append(html);
-		$($(`#${htmlName}-card`).children()[1]).toggle();
 
-		$($(`#${htmlName}-card`)[0].children[0]).click(() => {
-			$($(`#${htmlName}-card`).children()[1]).toggle();
+
+		$($(`#${divId}`).children()[1]).toggle();
+
+		// Add event handlers
+		$($(`#${divId} .row .col-2 button`)).click(() => {
+			removeOperatorFromList(entry.operator);
+		})
+		$($(`#${divId}`).children()[0]).click(() => {
+			$($(`#${divId}`).children()[1]).toggle();
 		})
 
-		$($(`#${htmlName}-card`).children()[0].children[1].children[0]).click(event => {
-			$(`#${htmlName}-card`).remove();
+		$($(`#${divId}`).children()[0].children[1].children[0]).click(event => {
+			$(`#${divId}`).remove();
 			delete selectedOperatorList[operatorName];
 			event.stopPropagation();
 		})
 
 		// Adjust spinners
-		const currentRank = $($(`#${operatorName}-elite-rank input`)[0])
-		const goalRank = $($(`#${operatorName}-elite-rank input`)[1])
-
-		currentRank.change(() => {
-			let rank = parseInt(currentRank.val());
-			if (isNaN(rank) || rank > currentRank[0].max) {
+		$(`#${htmlName}-elite-rank input:eq(0)`).change((spinner) => {
+			let rank = parseInt($(spinner.target).val());
+			if (isNaN(rank) || rank > parseInt(spinner.target.max)) {
 				return;
 			}
-			else if (rank > entry.goalRank) {
-				currentRank.val(entry.goalRank);
+			else if (entry.rank <= entry.goalRank) {
+				updateRecipeFromRank(entry, entry.rank, rank, -1)
 			}
-			else {
-				entry.rank = rank
-				// Update the goals here
-			}
-		})
+			entry.rank = rank;
 
-		$(goalRank).change(() => {
-			let rank = parseInt(goalRank.val());
-			if (isNaN(rank) || rank > goalRank[0].max) {
+		});
+
+		$(`#${htmlName}-elite-rank input:eq(1)`).change((spinner) => {
+			let rank = parseInt($(spinner.target).val());
+			if (isNaN(rank) || rank > parseInt(spinner.target.max)) {
 				return;
 			}
-			else {
-				entry.goalRank = rank
-				if (entry.rank > rank) {
-					entry.rank = rank;
-					currentRank.val(rank);
-				}
-				// Update the goals here
+			else if (entry.goalRank >= entry.rank) {
+				updateRecipeFromRank(entry, entry.goalRank, rank)
 			}
-		})
+			entry.goalRank = rank
+		});
 
-		const currentLevel = $($(`#${operatorName}-level input`)[0])
-		const goalLevel = $($(`#${operatorName}-level input`)[1])
-		$(currentLevel).change(() => {
-			let level = parseInt(currentLevel.val());
-			if (isNaN(level) || level > currentLevel[0].max) {
+		$(`#${htmlName}-level input:eq(0)`).change((spinner) => {
+			let level = parseInt($(spinner.target).val());
+			if (isNaN(level) || level > spinner.target.max) {
 				return;
-			}
-			else if (level > entry.goalLevel) {
-				currentLevel.val(entry.goalLevel);
 			}
 			else {
 				entry.level = level
 				// Update the goals here
 			}
-		})
+		});
 
-		$(goalLevel).change(() => {
-			let level = parseInt(goalLevel.val());
-			if (isNaN(level) || level > goalLevel[0].max) {
+		$(`#${htmlName}-level input:eq(1)`).change((spinner) => {
+			let level = parseInt($(spinner.target).val());
+			if (isNaN(level) || level > spinner.target.max) {
 				return;
 			}
 			else {
 				entry.goalLevel = level
-				if (entry.level > level) {
-					entry.level = level;
-					currentLevel.val(level);
-				}
 				// Update the goals here
 			}
-		})
+		});
 
-		// $(`input#${htmlName}CurrentLevelSpinner`).change(() => {
-		// 	entry.level = parseInt($(`input#${htmlName}CurrentLevelSpinner`).val());
-		// 	// updateGoals(entry);
-		// });
+		$(`#${htmlName}-skill-level input:eq(0)`).change((spinner) => {
+			let level = parseInt($(spinner.target).val());
+			if (isNaN(level) || level > spinner.target.max) {
+				return;
+			}
+			else {
+				updateRecipeFromSkillLv(operatorName, entry.skillLevel, level);
+				entry.skillLevel = level;
+				// Update goals here
+			}
+		});
 
-		// $(`input#${htmlName}GoalLevelSpinner`).change(() => {
-		// 	entry.goalLevel = parseInt($(`input#${htmlName}GoalLevelSpinner`).val());
-		// 	// updateGoals(entry);
-		// });
+		$(`#${htmlName}-skill-level input:eq(1)`).change((spinner) => {
+			let level = parseInt($(spinner.target).val());
+			if (isNaN(level) || level > spinner.target.max) {
+				return;
+			}
+			else {
+				updateRecipeFromSkillLv(operatorName, level, entry.skillLevelGoal);
+				entry.skillLevelGoal = level;
+			}
+		});
 
-		// $(`input#${htmlName}CurrentRankSpinner`).change(() => {
-		// 	const nextRank = parseInt($(`input#${htmlName}CurrentRankSpinner`).val());
-		// 	if (entry.rank != nextRank) {
-		// 		const maxLevel = entry.getMaxLevel(nextRank);
-		// 		const currentLevelSpinner = $(`input#${htmlName}CurrentLevelSpinner`);
-		// 		currentLevelSpinner.attr('max', maxLevel);
-		// 		currentLevelSpinner.val(1);
-		// 		// updateMaterialsList(entry.rank, nextRank, entry.operator);
-		// 		entry.rank = nextRank;
-		// 		entry.level = 1;
-		// 		// updateGoals(entry);
-		// 	}
+		for (let idx = 0; idx < numSkills; idx++) {
+			const opSkillName = skillUpgradeDb[operatorName].names[idx];
+			const htmlName = opSkillName.replaceAll(' ', '-').replaceAll('"','').toLowerCase();
+			const skillIdxBase = (idx + 1) * 10;
 
-		// });
+			$(`#${operatorName}-${htmlName} input:eq(0)`).change((spinner) => {
+				let level = parseInt($(spinner.target).val()) + skillIdxBase;
+				if (isNaN(level) || level > spinner.target.max) {
+					return;
+				}
+				else {
+					console.log(level, skillIdxBase)
+					updateRecipeFromSkillLv(operatorName, level, entry.skillMastery[skillIdxBase]);
+					entry.skillMastery[skillIdxBase] = level;
+				}
+			});
 
-		// $(`input#${htmlName}GoalRankSpinner`).change(() => {
-		// 	const nextRank = parseInt($(`input#${htmlName}GoalRankSpinner`).val());
-		// 	if (entry.goalRank != nextRank) {
-		// 		const maxLevel = entry.getMaxLevel(nextRank);
-		// 		const goalLevelSpinner = $(`input#${htmlName}GoalLevelSpinner`);
-		// 		goalLevelSpinner.attr('max', maxLevel);
-		// 		goalLevelSpinner.val(maxLevel);
-		// 		updateMaterialsList_GoalRank(entry.goalRank, nextRank, entry.operator);
-		// 		entry.goalRank = nextRank;
-		// 		entry.goalLevel = maxLevel;
-		// 		updateGoals(entry);
-		// 	}
-		// });
+			$(`#${operatorName}-${htmlName} input:eq(1)`).change((spinner) => {
+				let level = parseInt($(spinner.target).val());
+				if (isNaN(level) || level > spinner.target.max) {
+					return;
+				}
+				else {
+					console.log(level, skillIdxBase)
+					updateRecipeFromSkillLv(operatorName, level, entry.skillMasteryGoals[skillIdxBase]);
+					entry.skillMasteryGoals[skillIdxBase] = level;
+				}
+			});
+		}
+		sortList();
 	}
 
-	function clearAll() {
+	function updateRecipeFromSkillLv(operatorName, fromLevel, toLevel) {
+		if (fromLevel > toLevel) {
+			for(let i = fromLevel; i > toLevel; i--) {
+				updateMaterials(skillUpgradeDb[operatorName].recipes[i], 1)
+			}
+		}
+		else {
+			for(let i = fromLevel + 1; i <= toLevel; i++) {
+				updateMaterials(skillUpgradeDb[operatorName].recipes[i], -1)
+			}
+		}
+		recipeModule.update();
+	}
 
+	function updateRecipeFromRank(operatorEntry, oldRank, newRank, multiplier=1) {
+		if (oldRank == 0) {
+			if (newRank > 0) {
+				updateMaterials(operatorEntry.operator.e1_mats, multiplier)
+			}
+			if (newRank == 2) {
+				updateMaterials(operatorEntry.operator.e2_mats, multiplier)
+			}
+		}
+		else if (oldRank == 1) {
+			if (newRank == 0) {
+				updateMaterials(operatorEntry.operator.e1_mats, -multiplier)
+			}
+			if (newRank == 2) {
+				updateMaterials(operatorEntry.operator.e2_mats, multiplier)
+			}
+		}
+		else if (oldRank == 2) {
+			if (newRank < 2) {
+				updateMaterials(operatorEntry.operator.e2_mats, -multiplier)
+			}
+			if (newRank == 0) {
+				updateMaterials(operatorEntry.operator.e1_mats, -multiplier)
+			}
+		} 
+		recipeModule.update();
+	}
+
+	function updateMaterials(materials, multiplier=1) {
+		for (const material in materials) {
+			recipeModule.add(material, materials[material] * multiplier);
+		}
+	}
+
+	function sortList() {
+		let sortedOps = [];
+		$('#operators-list div.op-entry-card').sort(function(a, b) {
+			return a.id.localeCompare(b.id);
+		}).each(function() {
+			sortedOps.push($(this).clone(true));
+			$(this).remove();
+		});
+
+		sortedOps.forEach(opCard => {
+			$('#operators-list').append(opCard)
+		})
+	}	
+
+	function clearAll() {
+		localStorage.removeItem('arknightsRecipeOperators');
+	}
+
+	function loadSettings() {
 	}
 
 	return {
 		init: init,
 		add: addOperatorToList,
 		remove: removeOperatorFromList,
-		clear: clearAll
+		clear: clearAll,
+		getOperators: () => {return selectedOperatorList},
+		getMaterialList: () => {return materialList}
 	}
 }();
+

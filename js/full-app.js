@@ -1,5 +1,14 @@
 "use strict";
 
 $(document).ready(() => {
-	searchBar.init(fullCookbook);
+	RecipeListModule.init();
+	OperatorListFullModule.init(RecipeListModule);
+	searchBar.init(OperatorListFullModule.add);
+
+	$('#deleteAllDataBtn').click(() => {
+		$('#allRarityBtn').click();
+		$('#allClassesBtn').click();
+		RecipeListModule.clear();
+		OperatorListFullModule.clear();
+	});
 })

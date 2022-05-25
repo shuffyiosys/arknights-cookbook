@@ -5,9 +5,10 @@ const classIconsPath = `./img/class-icons/`;
 
 const searchBar = function () {
 	const classNames = ['Caster', 'Defender', 'Guard', 'Medic', 'Sniper', 'Specialist', 'Supporter', 'Vanguard'];
-	let recipeModule = null;
-	function init(cookbook) {
-		recipeModule = cookbook;
+	let addOperator = () => {};
+
+	function init(opAddFunction=(() => {})) {
+		addOperator = opAddFunction;
 		classNames.forEach(className => {
 			const htmlName = className.toLowerCase();
 			const html = `
@@ -167,7 +168,7 @@ const searchBar = function () {
 
 		$('div#searchList').append(html)
 		$('div#searchList')[0].children[$('div#searchList')[0].children.length - 1].onclick = () => {
-			recipeModule.add(operator);
+			addOperator(operator);
 		}
 	}
 

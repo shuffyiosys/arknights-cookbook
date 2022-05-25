@@ -448,7 +448,8 @@ const skillUpgradeDb = {
 	// 4 Star
     "Aciddrop":     new SkillRecipe({ 3: {  "Orirock": 5 }, 4: {  "Sugar": 2 }, 5: {  "Polyester": 3 }, 6: {  "Aketon": 2 }, 7: {  "Coagulating Gel": 2 }, 
         11: {  "Grindstone Pentahydrate": 1,  "Loxic Kohl": 4 }, 12: {  "Keton Colloid": 2,  "Polymerized Gel": 2 }, 13: {  "Bipolar Nanoflake": 2,  "Polymerized Gel": 2 }, 
-        21: {  "White Horse Kohl": 1,  "Aketon": 4 }, 22: {  "Incandescent Alloy Block": 2,  "RMA70-24": 2 }, 23: {  "Bipolar Nanoflake": 2,  "Orirock Concentration": 2 }}),
+        21: {  "White Horse Kohl": 1,  "Aketon": 4 }, 22: {  "Incandescent Alloy Block": 2,  "RMA70-24": 2 }, 23: {  "Bipolar Nanoflake": 2,  "Orirock Concentration": 2 }},
+        ['Fancy Shot', 'Trigger Time']),
     "Ambriel":      new SkillRecipe({ 3: {  "Oriron": 3 }, 4: {  "Polyketon": 2 }, 5: {  "Device": 2 }, 6: {  "Coagulating Gel": 2 }, 7: {  "Incandescent Alloy": 3 }, 
         11: {  "Manganese Trihydrate": 1,  "Integrated Device": 3 }, 12: {  "Incandescent Alloy Block": 2,  "RMA70-24": 2 }, 13: {  "Polymerization Preparation": 2,  "White Horse Kohl": 2 }, 
         21: {  "Grindstone Pentahydrate": 1,  "Loxic Kohl": 4 }, 22: {  "Polymerized Gel": 2,  "Orirock Concentration": 3 }, 23: {  "D32 Steel": 2,  "Oriron Block": 2 }}),

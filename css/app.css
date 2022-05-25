@@ -136,6 +136,7 @@ div.col-sm-8 > div > div.stats-card {
 .searchEntry {
 	cursor: pointer;
 	margin-top: 5px;
+	margin-right: 5px;
 	margin-bottom: 5px;
 	width: calc(100% - 8px);
 }
@@ -148,6 +149,7 @@ div.col-sm-8 > div > div.stats-card {
 #recipeContainer {
 	display: flex;
 	flex-flow: column;
+	padding-right: 0px;
 }
 
 #recipeContainerHeader {
@@ -157,6 +159,7 @@ div.col-sm-8 > div > div.stats-card {
 
 #recipeContainerBody {
 	flex-grow : 1;
+	padding-right: 10px;
 }
 
 #materialListContainer {
