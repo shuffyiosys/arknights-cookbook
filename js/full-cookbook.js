@@ -16,12 +16,16 @@ let OperatorListFullModule = function () {
 		}
 		/* HTML things to add */
 		selectedOperatorList[operator.name] = new OperatorEntry(operator, 1, 0);
-		buildSelectedOperatorList(operator.name);
+		buildOperatorCard(operator.name);
 
 		/* Ingredients to add */
-		updateMaterials(operator.e1_mats)
-		updateMaterials(operator.e2_mats)
+		// updateMaterials(operator.e1_mats)
+		// updateMaterials(operator.e2_mats)
 
+		/* Adding ingredients from skills */
+		for (let i = 3; i <= 7; i++) {
+			// updateMaterials(skillUpgradeDb[operator.name].recipes[i]);
+		}
 		// updateGoals(selectedOperatorList[operator.name]);
 		// updateRecipeList();
 		recipeModule.update();
@@ -32,30 +36,40 @@ let OperatorListFullModule = function () {
 		let htmlName = operator.name.replaceAll(' ', '-');
 		htmlName = htmlName.replaceAll(htmlNameRegex, '');
 		$(`tr#${htmlName}SelectedRow`).remove();
-		delete selectedOperatorList[operator.name];
-
-		console.log('Removing materials for operator')
-
-		updateMaterials(operator.e2_mats, -1);
-		updateMaterials(operator.e1_mats, -1);
+		
+		console.log(`Removing materials from operator ${operator.name}`)
+		
+		let operatorEntry = selectedOperatorList[operator.name];
+		if (operatorEntry.rank == 2) {
+			updateMaterials(operator.e2_mats, -1);
+		}
+		if (operatorEntry.rank == 1) {
+			updateMaterials(operator.e1_mats, -1);
+		}
+		updateRecipeFromSkillLv(operator.name, operatorEntry.skillLevel, 3);
+		for(let i = 0; i < 3; i++) {
+			updateRecipeFromSkillLv(operator.name, operatorEntry.skillMastery[i], 0)
+		}
 		recipeModule.update();
+		delete selectedOperatorList[operator.name];
 	}
 
-	function buildStatCard(title, opName, min, max) {
-		let htmlTitle = title.replaceAll(' ', '-').replaceAll('"','').toLowerCase();
-		let html = 
+	function buildStatCard(title, opName, min, max, useMinAsVal=false) {
+		const htmlTitle = title.replaceAll(' ', '-').replaceAll('"','').toLowerCase();
+		const value = (useMinAsVal) ? min : max;
+		const html = 
 			`<div id="${opName}-${htmlTitle}" class="stats-card">
 				<p>${title}</p>
 				<label>Current</label>
 				<input type="number" min="${min}" max="${max}" value="${min}"/>
 				<br>
 				<label>Goal </label>
-				<input type="number" min="${min}" max="${max}" value="${max}"/>
+				<input type="number" min="${min}" max="${max}" value="${value}"/>
 			</div>`;
 		return html;
 	}
 
-	function buildSelectedOperatorList(operatorName) {
+	function buildOperatorCard(operatorName) {
 		let entry = selectedOperatorList[operatorName];
 
 		if (!entry || entry.operator.rarity > 7) {
@@ -111,7 +125,7 @@ let OperatorListFullModule = function () {
 			const skillNames = skillUpgradeDb[operatorName].names;
 			numSkills = skillNames.length;
 			for (let idx = 0; idx < numSkills; idx++) {
-				html += buildStatCard(skillUpgradeDb[operatorName].names[idx], operatorName, 1, 3);
+				html += buildStatCard(skillUpgradeDb[operatorName].names[idx], operatorName, 0, 3, true);
 			}
 		}
 		html += `</div></div>`
@@ -209,14 +223,17 @@ let OperatorListFullModule = function () {
 			const htmlName = opSkillName.replaceAll(' ', '-').replaceAll('"','').toLowerCase();
 			const skillIdxBase = (idx + 1) * 10;
 
+			entry.skillMastery[skillIdxBase] = 0;
+			entry.skillMasteryGoals[skillIdxBase] = 0;
 			$(`#${operatorName}-${htmlName} input:eq(0)`).change((spinner) => {
-				let level = parseInt($(spinner.target).val()) + skillIdxBase;
+				let level = parseInt($(spinner.target).val());
 				if (isNaN(level) || level > spinner.target.max) {
 					return;
 				}
 				else {
-					console.log(level, skillIdxBase)
-					updateRecipeFromSkillLv(operatorName, level, entry.skillMastery[skillIdxBase]);
+					let toLevel = level + skillIdxBase;
+					let fromLevel = entry.skillMastery[skillIdxBase] + skillIdxBase
+					updateRecipeFromSkillLv(operatorName, fromLevel, toLevel);
 					entry.skillMastery[skillIdxBase] = level;
 				}
 			});
@@ -227,8 +244,9 @@ let OperatorListFullModule = function () {
 					return;
 				}
 				else {
-					console.log(level, skillIdxBase)
-					updateRecipeFromSkillLv(operatorName, level, entry.skillMasteryGoals[skillIdxBase]);
+					let toLevel = level + skillIdxBase;
+					let fromLevel = entry.skillMasteryGoals[skillIdxBase] + skillIdxBase
+					updateRecipeFromSkillLv(operatorName, fromLevel, toLevel, -1);
 					entry.skillMasteryGoals[skillIdxBase] = level;
 				}
 			});
@@ -236,15 +254,15 @@ let OperatorListFullModule = function () {
 		sortList();
 	}
 
-	function updateRecipeFromSkillLv(operatorName, fromLevel, toLevel) {
+	function updateRecipeFromSkillLv(operatorName, fromLevel, toLevel, multiplier=1) {
 		if (fromLevel > toLevel) {
 			for(let i = fromLevel; i > toLevel; i--) {
-				updateMaterials(skillUpgradeDb[operatorName].recipes[i], 1)
+				updateMaterials(skillUpgradeDb[operatorName].recipes[i], 1 * multiplier);
 			}
-		}
+		} 
 		else {
 			for(let i = fromLevel + 1; i <= toLevel; i++) {
-				updateMaterials(skillUpgradeDb[operatorName].recipes[i], -1)
+				updateMaterials(skillUpgradeDb[operatorName].recipes[i], -1 * multiplier);
 			}
 		}
 		recipeModule.update();
@@ -253,10 +271,10 @@ let OperatorListFullModule = function () {
 	function updateRecipeFromRank(operatorEntry, oldRank, newRank, multiplier=1) {
 		if (oldRank == 0) {
 			if (newRank > 0) {
-				updateMaterials(operatorEntry.operator.e1_mats, multiplier)
+				updateMaterials(operatorEntry.operator.e1_mats, multiplier);
 			}
 			if (newRank == 2) {
-				updateMaterials(operatorEntry.operator.e2_mats, multiplier)
+				updateMaterials(operatorEntry.operator.e2_mats, multiplier);
 			}
 		}
 		else if (oldRank == 1) {
