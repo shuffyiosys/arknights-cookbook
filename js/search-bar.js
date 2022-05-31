@@ -60,16 +60,7 @@ const searchBar = function () {
 		$('#name-input').keyup(() => {
 			filterResults();
 		});
-	
-		$('#clearAllSelectedBtn').click(() => {
-			clearRecipeList();
-			saveSettings();
-		})
-	
-		$('#ignoreRecipeMatsCheckbox').change(() => {
-			switchRecipeList();
-		})
-	
+
 		$('#toggleSearchBtn').click(() => {
 			$('#searchContainer').toggle();
 		})
@@ -168,7 +159,7 @@ const searchBar = function () {
 
 		$('div#searchList').append(html)
 		$('div#searchList')[0].children[$('div#searchList')[0].children.length - 1].onclick = () => {
-			addOperator(operator);
+			addOperator(new OperatorEntry(operator, 1, 0));
 		}
 	}
 

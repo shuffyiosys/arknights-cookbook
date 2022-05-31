@@ -153,7 +153,9 @@ div.col-sm-8 > div > div.stats-card {
 }
 
 #recipeContainerHeader {
-	height: 48px;
+	height: 40px;
+	padding-top: 4px;
+	padding-right: 10px;
 	margin-bottom: 8px;
 }
 
@@ -215,6 +217,11 @@ div.col-sm-8 > div > div.stats-card {
 
 #selectedOpsTable>tbody>tr>td:nth-child(1) {
 	width: 72px;
+}
+
+.headerButtons {
+	float: right;
+	margin-left: 8px;
 }
 
 .materialIcon {
