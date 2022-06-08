@@ -24,6 +24,7 @@ let OperatorListFullModule = function () {
 			const entry = selectedOperatorList[name];
 			fillOperatorRecipe(entry);
 		}
+		recipeModule.update();
 	}
 
 	function fillOperatorRecipe(entry) {
@@ -83,7 +84,7 @@ let OperatorListFullModule = function () {
 		
 		/* Ingredients to remove */
 		const entry = selectedOperatorList[operator.name];
-		for(let i = entry.rank; i <= entry.goalRank; i++) {
+		for(let i = entry.rank; i < entry.goalRank; i++) {
 			updateMaterials(operator.promoMats[i], -1);
 		}
 
@@ -141,7 +142,7 @@ let OperatorListFullModule = function () {
 					<div style="display: flex; flex-direction: row;">`
 
 		html += buildStatCard('Elite Rank', operatorName, 0, 2, entry.rank, entry.goalRank);
-		html += buildStatCard('Level', operatorName, 1, entry.getMaxLevel(0), entry.level, entry.goalLevel);
+		html += buildStatCard('Level', operatorName, 1, entry.getMaxLevel(entry.rank), entry.level, entry.goalLevel);
 		html += `
 			</div></div>
 				<div class="col-sm-8">
@@ -154,8 +155,8 @@ let OperatorListFullModule = function () {
 			const skillNames = skillUpgradeDb[operatorName].names;
 			numSkills = skillNames.length;
 			for (let idx = 0; idx < numSkills; idx++) {
-				const skillMasteryVal = entry.skillMastery[idx] - ((idx + 1) * 10)
-				const skillMasteryGoalVal = entry.skillMasteryGoals[idx] - ((idx + 1) * 10)
+				const skillMasteryVal = entry.skillMastery[idx];
+				const skillMasteryGoalVal = entry.skillMasteryGoals[idx];
 				html += buildStatCard(skillUpgradeDb[operatorName].names[idx], operatorName, 0, 3, skillMasteryVal, skillMasteryGoalVal);
 			}
 		}
@@ -187,8 +188,9 @@ let OperatorListFullModule = function () {
 			}
 			else if (entry.rank <= entry.goalRank) {
 				updateRecipeFromRank(entry, entry.rank, rank)
+				entry.rank = rank;
+				saveSettings();
 			}
-			entry.rank = rank;
 
 		});
 
@@ -198,9 +200,16 @@ let OperatorListFullModule = function () {
 				return;
 			}
 			else if (entry.goalRank >= entry.rank) {
-				updateRecipeFromRank(entry, entry.goalRank, rank, -1)
+				const maxLevel = entry.getMaxLevel(rank);
+				
+				$(`#${htmlName}-level input:eq(1)`).attr('max', maxLevel);
+				$(`#${htmlName}-level input:eq(1)`).val(maxLevel);
+
+				entry.goalLevel = maxLevel;
+				updateRecipeFromRank(entry, entry.goalRank, rank, -1);
+				entry.goalRank = rank;
+				saveSettings();
 			}
-			entry.goalRank = rank
 		});
 
 		$(`#${htmlName}-level input:eq(0)`).change((spinner) => {
@@ -209,7 +218,8 @@ let OperatorListFullModule = function () {
 				return;
 			}
 			else {
-				entry.level = level
+				entry.level = level;
+				saveSettings();
 				// Update the goals here
 			}
 		});
@@ -220,7 +230,8 @@ let OperatorListFullModule = function () {
 				return;
 			}
 			else {
-				entry.goalLevel = level
+				entry.goalLevel = level;
+				saveSettings();
 				// Update the goals here
 			}
 		});
@@ -233,6 +244,7 @@ let OperatorListFullModule = function () {
 			else if (entry.skillLevel <= entry.skillLevelGoal){
 				updateRecipeFromSkillLv(operatorName, entry.skillLevel, level);
 				entry.skillLevel = level;
+				saveSettings();
 				// Update goals here
 			}
 		});
@@ -245,6 +257,7 @@ let OperatorListFullModule = function () {
 			else if (entry.skillLevelGoal >= entry.skillLevel){
 				updateRecipeFromSkillLv(operatorName, level, entry.skillLevelGoal);
 				entry.skillLevelGoal = level;
+				saveSettings();
 			}
 		});
 
@@ -254,29 +267,31 @@ let OperatorListFullModule = function () {
 			const skillIdxBase = (idx + 1) * 10;
 
 			$(`#${operatorName}-${htmlName} input:eq(0)`).change((spinner) => {
+				console.log(entry.skillMasteryGoals[idx], entry.skillMastery[idx])
 				let level = parseInt($(spinner.target).val());
 				if (isNaN(level) || level > spinner.target.max) {
 					return;
 				}
-				else if(entry.skillMastery[idx] <= entry.skillMasteryGoals[idx]){
-					let toLevel = level + skillIdxBase;
-					let fromLevel = entry.skillMastery[idx]
-					updateRecipeFromSkillLv(operatorName, fromLevel, toLevel);
-					entry.skillMastery[idx] = toLevel;
-				}
+				let toLevel = level + skillIdxBase;
+				let fromLevel = entry.skillMastery[idx] + skillIdxBase;
+				updateRecipeFromSkillLv(operatorName, fromLevel, toLevel);
+				entry.skillMastery[idx] = level;
+				saveSettings();
+				recipeModule.update();
 			});
 
 			$(`#${operatorName}-${htmlName} input:eq(1)`).change((spinner) => {
+				console.log(entry.skillMasteryGoals[idx], entry.skillMastery[idx])
 				let level = parseInt($(spinner.target).val());
 				if (isNaN(level) || level > spinner.target.max) {
 					return;
 				}
-				else if(entry.skillMasteryGoals[idx] >= entry.skillMastery[idx]){
-					let toLevel = level + skillIdxBase;
-					let fromLevel = entry.skillMasteryGoals[idx]
-					updateRecipeFromSkillLv(operatorName, fromLevel, toLevel, -1);
-					entry.skillMasteryGoals[idx] = toLevel;
-				}
+				let toLevel = level + skillIdxBase;
+				let fromLevel = entry.skillMasteryGoals[idx] + skillIdxBase
+				updateRecipeFromSkillLv(operatorName, fromLevel, toLevel, -1);
+				entry.skillMasteryGoals[idx] = level;
+				saveSettings();
+				recipeModule.update();
 			});
 		}
 	}
@@ -292,7 +307,6 @@ let OperatorListFullModule = function () {
 				updateMaterials(skillUpgradeDb[operatorName].recipes[i], -1 * multiplier);
 			}
 		}
-		saveSettings();
 	}
 
 	function updateRecipeFromRank(operatorEntry, fromRank, toRank, multiplier=1) {
@@ -305,8 +319,8 @@ let OperatorListFullModule = function () {
 			for(let i = fromRank; i < toRank; i++) {
 				updateMaterials(operatorEntry.operator.promoMats[i], -1 * multiplier);
 			}
-		}	
-		saveSettings();
+		}
+		recipeModule.update();
 	}
 
 	function updateMaterials(materials, multiplier=1) {
@@ -331,6 +345,7 @@ let OperatorListFullModule = function () {
 
 	function clearAll() {
 		$(`#operators-list`).empty();
+		selectedOperatorList = {};
 		localStorage.removeItem('arknightsRecipeOperators');
 	}
 

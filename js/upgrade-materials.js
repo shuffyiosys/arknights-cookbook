@@ -71,6 +71,7 @@ const upgradeMaterials = {
 	'Polymerized Gel':          new Material(4, {'Oriron Cluster': 1, 'Coagulating Gel': 1, 'Incandescent Alloy': 1}),
 	'Pure Lubricant':           new Material(4, {}),
 	'Refined Solvent':          new Material(4, {}),
+	'Cutting Fluid Solution':	new Material(4, {'Compound Cutting Fluid': 1, 'Crystalline Component': 1, 'RMA70-12': 1}),
 
 	// Tier 5
 	'Bipolar Nanoflake':            new Material(5, {'Optimized Device': 1, 'White Horse Kohl': 2}),
@@ -122,7 +123,10 @@ const RecipeListModule = function () {
 		$(`#recipeTable`).append(`<tbody id="ChipList"></tbody>`);
 		$(`#recipeTable`).append(`<tbody id="ChipPackList"></tbody>`);
 		$(`#recipeTable`).append(`<tbody id="DualchipList"></tbody>`);
-		clearRecipeList();
+
+		for (const materialName in upgradeMaterials) {
+			materialList[materialName] = new MaterialEntry();
+		}
 	}
 
 	function createMaterialEntry(materialName) {
@@ -131,6 +135,8 @@ const RecipeListModule = function () {
 		if ($(`#${htmlName}MatRow`).length != 0 || material.amounts.recipeTotal == 0) {
 			return;
 		}
+
+		material.amounts.needed -= material.amounts.inventory;
 
 		const tierBackgroundColors = {
 			1: `#888`,
@@ -179,16 +185,15 @@ const RecipeListModule = function () {
 			else {
 				const diff = number - $(`input#${htmlName}InventorySpinner`)[0].lastValue;
 				material.amounts.inventory += diff;
-				updateMaterialAmount(material, -diff);
+				updateNeededIngredients(material, -diff);
 				$(`input#${htmlName}InventorySpinner`)[0].lastValue = number;
 				saveSettings();
 			}
 		});
 	}
 
-	function updateMaterialAmount(material, amount) {
+	function updateNeededIngredients(material, amount) {
 		const htmlName = material.name.replaceAll(' ', '');
-		console.log(material.amounts.needed);
 		material.amounts.needed += amount;
 
 		let needed = material.amounts.needed;
@@ -206,7 +211,7 @@ const RecipeListModule = function () {
 		const recipe = upgradeMaterials[material.name].recipe
 		for(const ingredient in recipe) {
 			const ingredientInfo = {name: ingredient, amounts: materialList[ingredient]};
-			updateMaterialAmount(ingredientInfo, recipe[ingredient] * amount);
+			updateNeededIngredients(ingredientInfo, recipe[ingredient] * amount);
 		}
 	}
 
@@ -247,9 +252,16 @@ const RecipeListModule = function () {
 				$(`#${htmlName}MatRow`).removeClass('listRowCanComplete');
 				$(`#${htmlName}MatRow`).addClass('listRowComplete');
 				
-			} else if ($('#ignoreRecipeMatsCheckbox').prop('checked') == false) {
+			} 
+			else { 
 				$(`#${htmlName}MatRow`).removeClass('listRowComplete');
-
+				if ($('#ignoreRecipeMatsCheckbox').prop('checked') == false) {
+					const recipe = upgradeMaterials[materialName].recipe;
+					for (const ingredient in recipe) {
+						// console.log(`Ingredient for ${materialName}: ${ingredient}`)
+						// console.log(materialList[ingredient])
+					}
+				}
 				// let canCraft = false;
 				// const recipe = upgradeMaterials[materialName].recipe;
 				// for (const ingredient in recipe) {
@@ -283,12 +295,13 @@ const RecipeListModule = function () {
 				Object.assign(materialList[materialName], inventory[materialName]);
 			}
 		}
-		console.log(inventory)
 	}
 
 	function clearRecipeList() {
-		for (const materialName in upgradeMaterials) {
+		for (const materialName in materialList) {
 			materialList[materialName] = new MaterialEntry();
+			// materialList[materialName].needed = 0;
+			// materialList[materialName].recipeTotal = 0;
 		}
 		for (let matTierNum = 1; matTierNum <= 5; matTierNum++) {
 			const htmlName = `tier${matTierNum}MatsList`
