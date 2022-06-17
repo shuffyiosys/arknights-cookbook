@@ -84,7 +84,7 @@ let OperatorListFullModule = function () {
 		
 		/* Ingredients to remove */
 		const entry = selectedOperatorList[operator.name];
-		for(let i = entry.rank; i < entry.goalRank; i++) {
+		for(let i = entry.rank; i <= entry.goalRank; i++) {
 			updateMaterials(operator.promoMats[i], -1);
 		}
 

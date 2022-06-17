@@ -175,20 +175,15 @@ const RecipeListModule = function () {
 			</tr>`;
 		$(appendTo).append(matHtml);
 
-		$(`input#${htmlName}InventorySpinner`)[0].lastValue = material.amounts.inventory;
-
 		$(`input#${htmlName}InventorySpinner`).change((spinner) => {
 			let number = parseInt($(spinner.target).val());
 			if (isNaN(number) || number > spinner.target.max) {
 				return;
 			}
-			else {
-				const diff = number - $(`input#${htmlName}InventorySpinner`)[0].lastValue;
-				material.amounts.inventory += diff;
-				updateNeededIngredients(material, -diff);
-				$(`input#${htmlName}InventorySpinner`)[0].lastValue = number;
-				saveSettings();
-			}
+			const diff = number - material.amounts.inventory;
+			material.amounts.inventory += diff;
+			updateNeededIngredients(material, -diff);
+			saveSettings();
 		});
 	}
 
@@ -255,24 +250,23 @@ const RecipeListModule = function () {
 			else { 
 				$(`#${htmlName}MatRow`).removeClass('listRowComplete');
 				if ($('#ignoreRecipeMatsCheckbox').prop('checked') == false) {
+					let canCraft = false;
 					const recipe = upgradeMaterials[materialName].recipe;
+
+					console.log(`Checking if can craft: ${materialName}`)
 					for (const ingredient in recipe) {
-						// console.log(`Ingredient for ${materialName}: ${ingredient}`)
-						// console.log(materialList[ingredient])
+						console.log(`Ingredient: ${ingredient}`)
+						const ingredientNeeded = (recipe[ingredient] * needed);
+						canCraft = materialList[ingredient].needed < ingredientNeeded;
+					}
+
+					if (canCraft == true) {
+						$(`#${htmlName}MatRow`).addClass('listRowCanComplete');
+					} else {
+						$(`#${htmlName}MatRow`).removeClass('listRowCanComplete');
 					}
 				}
-				// let canCraft = false;
-				// const recipe = upgradeMaterials[materialName].recipe;
-				// for (const ingredient in recipe) {
-				// 	const ingredientNeeded = (recipe[ingredient] * needed);
-				// 	canCraft = materialList[ingredient].needed < ingredientNeeded;
-				// }
-
-				// if (canCraft == true) {
-				// 	$(`#${htmlName}MatRow`).addClass('listRowCanComplete');
-				// } else {
-				// 	$(`#${htmlName}MatRow`).removeClass('listRowCanComplete');
-				// }
+				
 			}
 		}
 	}
@@ -313,10 +307,23 @@ const RecipeListModule = function () {
 		localStorage.setItem('arknightsRecipeInventory', JSON.stringify(savedInventory));
 	}
 
+	function isInventoryEmpty() {
+		let empty = true;
+		for(const materialName in upgradeMaterials) {
+			empty = materialList[materialName].needed == 0;
+
+			if (empty == false) {
+				break;
+			}
+		}
+		return empty;
+	}
+
 	return {
 		init: init,
 		add: addMaterialToRecipe,
 		clear: clearRecipeList,
+		isEmpty: isInventoryEmpty,
 		update: updateRecipeList,
 		load: loadSettings,
 		save: saveSettings,
