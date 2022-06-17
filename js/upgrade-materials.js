@@ -238,7 +238,7 @@ const RecipeListModule = function () {
 			const material = materialList[materialName];
 			const htmlName = materialName.replaceAll(' ', '');
 
-			if (material.recipeTotal == 0) {
+			if (material.recipeTotal <= 0) {
 				$(`#${htmlName}MatRow`).remove();
 				continue;
 			}
@@ -251,7 +251,6 @@ const RecipeListModule = function () {
 			if (needed == 0) {
 				$(`#${htmlName}MatRow`).removeClass('listRowCanComplete');
 				$(`#${htmlName}MatRow`).addClass('listRowComplete');
-				
 			} 
 			else { 
 				$(`#${htmlName}MatRow`).removeClass('listRowComplete');
@@ -310,6 +309,8 @@ const RecipeListModule = function () {
 		$('#ChipList').html('');
 		$('#ChipPackList').html('');
 		$('#DualchipList').html('');
+		let savedInventory = {};
+		localStorage.setItem('arknightsRecipeInventory', JSON.stringify(savedInventory));
 	}
 
 	return {
