@@ -100,8 +100,8 @@ let OperatorListFullModule = function () {
 		}
 		delete selectedOperatorList[operator.name];
 		saveSettings();
-		recipeModule.save();
 		recipeModule.update();
+		recipeModule.save();
 	}
 
 	function buildOperatorCard(entry) {
@@ -186,7 +186,7 @@ let OperatorListFullModule = function () {
 			if (isNaN(rank) || rank > parseInt(spinner.target.max)) {
 				return;
 			}
-			updateRecipe(entry.operator.promoMats, entry.rank, rank)
+			updateRecipeFromCurrent(entry.operator.promoMats, entry.rank, rank, entry.goalRank);
 			entry.rank = rank;
 			saveSettings();
 		});
@@ -200,11 +200,14 @@ let OperatorListFullModule = function () {
 			const maxLevel = entry.getMaxLevel(rank);
 			$(`#${htmlName}-level input:eq(1)`).attr('max', maxLevel);
 			$(`#${htmlName}-level input:eq(1)`).val(maxLevel);
-			updateRecipe(entry.operator.promoMats, rank, entry.goalRank);
+
+
+			updateRecipeFromGoal(entry.operator.promoMats, entry.goalRank, rank, entry.rank);
 			entry.goalLevel = maxLevel;
 			entry.goalRank = rank;
 			saveSettings();
 		});
+
 
 		$(`#${htmlName}-level input:eq(0)`).change((spinner) => {
 			let level = parseInt($(spinner.target).val());
@@ -280,6 +283,34 @@ let OperatorListFullModule = function () {
 				recipeModule.update();
 			});
 		}
+	}
+
+	function updateRecipeFromCurrent(recipe, fromLevel, toLevel, compareToLevel) {
+		if (toLevel > fromLevel && toLevel <= compareToLevel) {
+			for(let i = fromLevel + 1; i <= toLevel; i++) {
+				updateMaterials(recipe[i], -1);
+			}
+		}
+		else if (fromLevel > toLevel && toLevel < compareToLevel) {
+			for(let i = fromLevel; i > toLevel; i--) {
+				updateMaterials(recipe[i], 1);
+			}
+		}
+		recipeModule.update();
+	}
+
+	function updateRecipeFromGoal(recipe, fromLevel, toLevel, compareToLevel) {
+		if (toLevel > fromLevel && toLevel > compareToLevel) {
+			for(let i = fromLevel; i > toLevel; i--) {
+				updateMaterials(recipe[i], 1);
+			}
+		}
+		else if (fromLevel > toLevel && toLevel >= compareToLevel) {
+			for(let i = fromLevel + 1; i <= toLevel; i++) {
+				updateMaterials(recipe[i], -1);
+			}
+		}
+		recipeModule.update();
 	}
 
 	function updateRecipe(recipe, fromLevel, toLevel) {

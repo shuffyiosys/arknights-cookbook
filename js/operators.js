@@ -100,7 +100,7 @@ class OperatorEntry {
 		this.operator = operator;
 		this.level = level;
 		this.rank = rank;
-		this.goalRank = 0; //this.getMaxRank();
+		this.goalRank = this.getMaxRank();
 		this.goalLevel = this.getMaxLevel(this.goalRank);
 
 		this.skillLevel = 1;

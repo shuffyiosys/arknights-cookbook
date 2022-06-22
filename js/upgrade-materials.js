@@ -298,9 +298,8 @@ const RecipeListModule = function () {
 
 	function clearRecipeList() {
 		for (const materialName in materialList) {
-			materialList[materialName] = new MaterialEntry();
-			// materialList[materialName].needed = 0;
-			// materialList[materialName].recipeTotal = 0;
+			materialList[materialName].needed = 0;
+			materialList[materialName].recipeTotal = 0;
 		}
 		for (let matTierNum = 1; matTierNum <= 5; matTierNum++) {
 			const htmlName = `tier${matTierNum}MatsList`
