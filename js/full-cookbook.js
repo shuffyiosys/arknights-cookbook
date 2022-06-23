@@ -233,7 +233,7 @@ let OperatorListFullModule = function () {
 				return;
 			}
 			
-			updateRecipe(skillUpgradeDb[operatorName].recipes, entry.skillLevel, level);
+			updateRecipeFromCurrent(skillUpgradeDb[operatorName].recipes, entry.skillLevel, level, entry.skillLevelGoal);
 			entry.skillLevel = level;
 			saveSettings();
 		});
@@ -243,7 +243,7 @@ let OperatorListFullModule = function () {
 			if (isNaN(level) || level > spinner.target.max) {
 				return;
 			}
-			updateRecipe(skillUpgradeDb[operatorName].recipes, level, entry.skillLevelGoal);
+			updateRecipeFromGoal(skillUpgradeDb[operatorName].recipes, entry.skillLevelGoal, level, entry.skillLevel);
 			entry.skillLevelGoal = level;
 			saveSettings();
 		});
@@ -261,7 +261,7 @@ let OperatorListFullModule = function () {
 				let toLevel = level + skillIdxBase;
 				let fromLevel = entry.skillMastery[idx] + skillIdxBase
 
-				updateRecipe(skillUpgradeDb[operatorName].recipes, fromLevel, toLevel);
+				updateRecipeFromCurrent(skillUpgradeDb[operatorName].recipes, fromLevel, toLevel, entry.skillMasteryGoals[idx] + skillIdxBase);
 				entry.skillMastery[idx] = level;
 				saveSettings();
 				recipeModule.update();
@@ -276,7 +276,7 @@ let OperatorListFullModule = function () {
 				const skillIdxBase = (idx + 1) * 10;
 				let toLevel = level + skillIdxBase;
 				let fromLevel = entry.skillMasteryGoals[idx] + skillIdxBase
-				updateRecipe(skillUpgradeDb[operatorName].recipes, toLevel, fromLevel);
+				updateRecipeFromGoal(skillUpgradeDb[operatorName].recipes, fromLevel, toLevel, entry.skillMastery[idx] + skillIdxBase);
 
 				entry.skillMasteryGoals[idx] = level;
 				saveSettings();
@@ -301,12 +301,12 @@ let OperatorListFullModule = function () {
 
 	function updateRecipeFromGoal(recipe, fromLevel, toLevel, compareToLevel) {
 		if (toLevel > fromLevel && toLevel > compareToLevel) {
-			for(let i = fromLevel; i > toLevel; i--) {
+			for(let i = fromLevel + 1; i <= toLevel; i++) {
 				updateMaterials(recipe[i], 1);
 			}
 		}
 		else if (fromLevel > toLevel && toLevel >= compareToLevel) {
-			for(let i = fromLevel + 1; i <= toLevel; i++) {
+			for(let i = fromLevel; i > toLevel; i--) {
 				updateMaterials(recipe[i], -1);
 			}
 		}

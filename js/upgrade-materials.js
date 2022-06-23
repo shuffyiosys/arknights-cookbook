@@ -253,9 +253,7 @@ const RecipeListModule = function () {
 					let canCraft = false;
 					const recipe = upgradeMaterials[materialName].recipe;
 
-					console.log(`Checking if can craft: ${materialName}`)
 					for (const ingredient in recipe) {
-						console.log(`Ingredient: ${ingredient}`)
 						const ingredientNeeded = (recipe[ingredient] * needed);
 						canCraft = materialList[ingredient].needed < ingredientNeeded;
 					}
