@@ -10,7 +10,6 @@ let OperatorListFullModule = function () {
 		setTimeout(() => {
 			loadSettings();
 			recipeModule.load();
-			recipeModule.update();
 		}, 0);
 		
 		$('#ignoreRecipeMatsCheckbox').change(() => {
@@ -24,7 +23,7 @@ let OperatorListFullModule = function () {
 			const entry = selectedOperatorList[name];
 			fillOperatorRecipe(entry);
 		}
-		recipeModule.update();
+		
 	}
 
 	function fillOperatorRecipe(entry) {
@@ -38,12 +37,12 @@ let OperatorListFullModule = function () {
 		}
 
 		for (let i = 0; i < entry.skillMastery.length; i++) {
-			for(let j = entry.skillMastery[i]; j <= entry.skillMasteryGoals[i]; j++ ) {
+			for(let j = entry.skillMastery[i] + 1; j <= entry.skillMasteryGoals[i]; j++ ) {
 				const index = ((i + 1) * 10) + j
 				updateMaterials(skillUpgradeDb[operator.name].recipes[index]);
 			}
 		}
-		setTimeout(recipeModule.update, 0);
+		// setTimeout(recipeModule.update, 0);
 	}
 
 	function buildStatCard(title, opName, min, max, currentVal = 0, goalVal = 0) {
@@ -100,7 +99,6 @@ let OperatorListFullModule = function () {
 		}
 		delete selectedOperatorList[operator.name];
 		saveSettings();
-		recipeModule.update();
 		recipeModule.save();
 	}
 
@@ -264,7 +262,7 @@ let OperatorListFullModule = function () {
 				updateRecipeFromCurrent(skillUpgradeDb[operatorName].recipes, fromLevel, toLevel, entry.skillMasteryGoals[idx] + skillIdxBase);
 				entry.skillMastery[idx] = level;
 				saveSettings();
-				recipeModule.update();
+				
 			});
 
 			$(`#${operatorName}-${htmlName} input:eq(1)`).change((spinner) => {
@@ -280,7 +278,7 @@ let OperatorListFullModule = function () {
 
 				entry.skillMasteryGoals[idx] = level;
 				saveSettings();
-				recipeModule.update();
+				
 			});
 		}
 	}
@@ -296,7 +294,7 @@ let OperatorListFullModule = function () {
 				updateMaterials(recipe[i], 1);
 			}
 		}
-		recipeModule.update();
+		recipeModule.save();
 	}
 
 	function updateRecipeFromGoal(recipe, fromLevel, toLevel, compareToLevel) {
@@ -310,23 +308,7 @@ let OperatorListFullModule = function () {
 				updateMaterials(recipe[i], -1);
 			}
 		}
-		recipeModule.update();
-	}
-
-	function updateRecipe(recipe, fromLevel, toLevel) {
-		// Going down
-		if (fromLevel > toLevel) {
-			for(let i = fromLevel; i > toLevel; i--) {
-				updateMaterials(recipe[i], 1);
-			}
-		} 
-		// Going up
-		else {
-			for(let i = fromLevel + 1; i <= toLevel; i++) {
-				updateMaterials(recipe[i], -1);
-			}
-		}
-		recipeModule.update();
+		recipeModule.save();
 	}
 
 	function updateMaterials(materials, multiplier=1) {

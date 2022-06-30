@@ -210,21 +210,45 @@ const RecipeListModule = function () {
 		}
 	}
 
-	function addMaterialToRecipe(material, amount, multiplier = 1) {
-		if (material in materialList == false || material === "") {
-			console.log(`Could not find this material: ${material}`);
+	function addMaterialToRecipe(materialName, amount, multiplier = 1) {
+		if (materialName in materialList == false || materialName === "") {
+			console.log(`Could not find this material: ${materialName}`);
 			return;
 		}
+		let material = materialList[materialName];
+		material.recipeTotal += (amount * multiplier);
+		material.needed += (amount * multiplier);
+		updateRecipleMaterial(materialName);
 
-		materialList[material].recipeTotal += (amount * multiplier);
-		materialList[material].needed += (amount * multiplier);
-
-		createMaterialEntry(material);
 		if ($('#ignoreRecipeMatsCheckbox').prop('checked') == false) {
-			const recipe = upgradeMaterials[material].recipe;
+			const recipe = upgradeMaterials[materialName].recipe;
 			for (const ingredient in recipe) {
 				addMaterialToRecipe(ingredient, recipe[ingredient], amount * multiplier);
 			}
+		}
+	}
+
+	function updateRecipleMaterial(materialName) {
+		const material = materialList[materialName];
+		const htmlName = materialName.replaceAll(' ', '');
+		if (material.recipeTotal > 0) {
+			createMaterialEntry(materialName);
+			let needed = material.needed;
+			needed = (needed < 0) ? 0 : needed;
+	
+			$(`td#${htmlName}MatNeeded`).html(`${needed} / ${material.recipeTotal}`);
+			$(`input#${htmlName}InventorySpinner`).val(material.inventory);
+			
+			if (needed == 0) {
+				$(`#${htmlName}MatRow`).removeClass('listRowCanComplete');
+				$(`#${htmlName}MatRow`).addClass('listRowComplete');
+			}
+			else { 
+				$(`#${htmlName}MatRow`).removeClass('listRowComplete');
+			}
+		}
+		else {
+			$(`#${htmlName}MatRow`).remove();
 		}
 	}
 
@@ -255,6 +279,7 @@ const RecipeListModule = function () {
 
 					for (const ingredient in recipe) {
 						const ingredientNeeded = (recipe[ingredient] * needed);
+						console.log(`Ingredients needed: ${ingredientNeeded}`)
 						canCraft = materialList[ingredient].needed < ingredientNeeded;
 					}
 
@@ -264,7 +289,6 @@ const RecipeListModule = function () {
 						$(`#${htmlName}MatRow`).removeClass('listRowCanComplete');
 					}
 				}
-				
 			}
 		}
 	}
