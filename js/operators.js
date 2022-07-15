@@ -101,7 +101,7 @@ class OperatorEntry {
 	constructor(operator, level, rank) {
 		this.operator = operator;
 		this.level = level;
-		this.rank = rank;
+		this.currentRank = rank;
 		this.goalRank = this.getMaxRank();
 		this.goalLevel = this.getMaxLevel(this.goalRank);
 
@@ -113,7 +113,7 @@ class OperatorEntry {
 
 	updateStats(stats) {
 		this.level = stats.level;
-		this.rank = stats.rank;
+		this.currentRank = stats.currentRank;
 		this.goalRank = stats.goalRank;
 		this.goalLevel = stats.goalLevel;
 
@@ -144,28 +144,28 @@ class OperatorEntry {
 	}
 
 	getGoalMet() {
-		return (this.rank >= this.goalRank) && (this.level >= this.goalLevel)
+		return (this.currentRank >= this.goalRank) && (this.level >= this.goalLevel)
 	}
 
 	getGrowthState() {
-		if (this.rank == 0) {
-			if (this.level == this.getMaxLevel(this.rank)) {
+		if (this.currentRank == 0) {
+			if (this.level == this.getMaxLevel(this.currentRank)) {
 				return GROWTH_STATE.E0_MAX;
 			}
 			else {
 				return GROWTH_STATE.E0;
 			}
 		}
-		else if (this.rank == 1) {
-			if (this.level == this.getMaxLevel(this.rank)) {
+		else if (this.currentRank == 1) {
+			if (this.level == this.getMaxLevel(this.currentRank)) {
 				return GROWTH_STATE.E1_MAX;
 			}
 			else {
 				return GROWTH_STATE.E1;
 			}
 		}
-		else if (this.rank == 2) {
-			if (this.level == this.getMaxLevel(this.rank)) {
+		else if (this.currentRank == 2) {
+			if (this.level == this.getMaxLevel(this.currentRank)) {
 				return GROWTH_STATE.E2_MAX;
 			}
 			else {

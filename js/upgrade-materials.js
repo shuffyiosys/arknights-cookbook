@@ -310,6 +310,7 @@ const RecipeListModule = function () {
 		$('#ChipList').html('');
 		$('#ChipPackList').html('');
 		$('#DualchipList').html('');
+		saveSettings();
 	}
 
 	return {
