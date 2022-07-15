@@ -40,23 +40,21 @@ class Operator {
 		this.name = name;
 		this.opClass = opClass;
 		this.rarity = rarity;
-        this.promoMats = [e1Mats, e2Mats];
-		this.e1_mats = e1Mats;
-		this.e2_mats = e2Mats;
+        this.promoMats = [{}, e1Mats, e2Mats];
 
 		// Calculate upgrade chips needed
 		if (rarity >= 4) {
-			this.promoMats[0][`${CLASS_TO_STRING[this.opClass]} Chip`] = (rarity - 1);
+			this.promoMats[1][`${CLASS_TO_STRING[this.opClass]} Chip`] = (rarity - 1);
 		}
 		
 		if (rarity == 4) {
-			this.promoMats[1][`${CLASS_TO_STRING[this.opClass]} Chip Pack`] = 5;
+			this.promoMats[2][`${CLASS_TO_STRING[this.opClass]} Chip Pack`] = 5;
 		}
 		else if (rarity == 5) {
-			this.promoMats[1][`${CLASS_TO_STRING[this.opClass]} Dualchip`] = 3;
+			this.promoMats[2][`${CLASS_TO_STRING[this.opClass]} Dualchip`] = 3;
 		}
 		else if (rarity == 6) {
-			this.promoMats[1][`${CLASS_TO_STRING[this.opClass]} Dualchip`] = 4;
+			this.promoMats[2][`${CLASS_TO_STRING[this.opClass]} Dualchip`] = 4;
 		}
 	}
 
