@@ -14,12 +14,12 @@ let OperatorListFullModule = function () {
 		}, 0);
 		
 		$('#ignoreRecipeMatsCheckbox').change(() => {
-			setTimeout(refreshRecipeList, 0);
+			setTimeout(refreshRecipeList(), 0);
 		});
 	}
 
 	function refreshRecipeList() {
-		recipeModule.clear();
+		recipeModule.refresh();
 		for(const name in selectedOperatorList) {
 			const entry = selectedOperatorList[name];
 			fillOperatorRecipe(entry);
@@ -29,7 +29,7 @@ let OperatorListFullModule = function () {
 
 	function fillOperatorRecipe(entry) {
 		const operator = entry.operator;
-		for(let i = entry.currentRank; i < entry.goalRank; i++) {
+		for(let i = entry.currentRank; i <= entry.goalRank; i++) {
 			updateMaterials(operator.promoMats[i]);
 		}
 
@@ -318,7 +318,7 @@ let OperatorListFullModule = function () {
 			}
 		} 
 		else {
-			for(let i = fromLevel + 1; i <= toLevel; i++) {
+			for(let i = toLevel; i > fromLevel; i--) {
 				updateMaterials(skillUpgradeDb[operatorName].recipes[i], -1 * multiplier);
 			}
 		}
@@ -327,12 +327,12 @@ let OperatorListFullModule = function () {
 
 	function updateRecipeFromRank(operatorEntry, fromRank, toRank, multiplier=1) {
 		if (fromRank > toRank) {
-			for(let i = fromRank - 1; i >= toRank; i--) {
+			for(let i = fromRank; i > toRank; i--) {
 				updateMaterials(operatorEntry.operator.promoMats[i], 1 * multiplier);
 			}
 		} 
 		else {
-			for(let i = fromRank; i < toRank; i++) {
+			for(let i = toRank; i > fromRank; i--) {
 				updateMaterials(operatorEntry.operator.promoMats[i], -1 * multiplier);
 			}
 		}

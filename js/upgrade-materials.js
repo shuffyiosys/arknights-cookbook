@@ -178,15 +178,14 @@ const RecipeListModule = function () {
 		$(`input#${htmlName}InventorySpinner`)[0].lastValue = material.amounts.inventory;
 
 		$(`input#${htmlName}InventorySpinner`).change((spinner) => {
-			let number = parseInt($(spinner.target).val());
-			if (isNaN(number) || number > spinner.target.max) {
+			let newAmount = parseInt($(spinner.target).val());
+			if (isNaN(newAmount) || newAmount > spinner.target.max) {
 				return;
 			}
 			else {
-				const diff = number - $(`input#${htmlName}InventorySpinner`)[0].lastValue;
-				material.amounts.inventory += diff;
-				updateNeededIngredients(material, -diff);
-				$(`input#${htmlName}InventorySpinner`)[0].lastValue = number;
+				const diff = material.amounts.inventory - newAmount;
+				material.amounts.inventory = newAmount;
+				updateNeededIngredients(material, diff);
 				saveSettings();
 			}
 		});
@@ -215,18 +214,18 @@ const RecipeListModule = function () {
 		}
 	}
 
-	function addMaterialToRecipe(material, amount, multiplier = 1) {
-		if (material in materialList == false || material === "") {
-			console.log(`Could not find this material: ${material}`);
+	function addMaterialToRecipe(materialName, amount, multiplier = 1) {
+		if (materialName in materialList == false || materialName === "") {
+			console.log(`Could not find this material: ${materialName}`);
 			return;
 		}
 
-		materialList[material].recipeTotal += (amount * multiplier);
-		materialList[material].needed += (amount * multiplier);
+		materialList[materialName].recipeTotal += (amount * multiplier);
+		materialList[materialName].needed += (amount * multiplier);
 
-		createMaterialEntry(material);
+		createMaterialEntry(materialName);
 		if ($('#ignoreRecipeMatsCheckbox').prop('checked') == false) {
-			const recipe = upgradeMaterials[material].recipe;
+			const recipe = upgradeMaterials[materialName].recipe;
 			for (const ingredient in recipe) {
 				addMaterialToRecipe(ingredient, recipe[ingredient], amount * multiplier);
 			}
@@ -297,11 +296,24 @@ const RecipeListModule = function () {
 		}
 	}
 
+	function refreshRecipeList() {
+		for (const materialName in materialList) {
+			materialList[materialName].recipeTotal = 0;
+			materialList[materialName].needed = 0;
+		}
+		for (let matTierNum = 1; matTierNum <= 5; matTierNum++) {
+			const htmlName = `tier${matTierNum}MatsList`
+			$(`#${htmlName}`).html('');
+		}
+		$('#ChipList').html('');
+		$('#ChipPackList').html('');
+		$('#DualchipList').html('');
+		saveSettings();
+	}
+
 	function clearRecipeList() {
 		for (const materialName in materialList) {
 			materialList[materialName] = new MaterialEntry();
-			// materialList[materialName].needed = 0;
-			// materialList[materialName].recipeTotal = 0;
 		}
 		for (let matTierNum = 1; matTierNum <= 5; matTierNum++) {
 			const htmlName = `tier${matTierNum}MatsList`
@@ -318,6 +330,7 @@ const RecipeListModule = function () {
 		add: addMaterialToRecipe,
 		clear: clearRecipeList,
 		update: updateRecipeList,
+		refresh: refreshRecipeList,
 		load: loadSettings,
 		save: saveSettings,
 		get: () => {return materialList}
