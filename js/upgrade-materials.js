@@ -20,6 +20,23 @@ class MaterialEntry {
 	}
 }
 
+// This is to help speed up checking if some mats can be crafted
+const materialTierIndex = {
+	1: new Set(["Orirock", "Oriron Shard", "Diketon", "Sugar Substitute", "Ester", "Damaged Device"]),
+	2: new Set(["Orirock Cube", "Oriron", "Polyketon", "Sugar", "Polyester", "Device", "Orirock Cluster"]),
+	3: new Set(["Oriron Cluster", "Aketon", "Sugar Pack", "Polyester Pack", "Integrated Device", "Grindstone", "RMA70-12", "Manganese Ore", "Loxic Kohl", "Incandescent Alloy", "Crystalline Component", "Coagulating Gel", "Compound Lubricant", "Compound Cutting Fluid", "Semi-Synthetic Solvent"]),
+	4: new Set(["Orirock Concentration", "Oriron Block", "Keton Colloid", "Sugar Lump", "Polyester Lump", "Optimized Device", "Grindstone Pentahydrate", "RMA70-24", "Manganese Trihydrate", "White Horse Kohl", "Incandescent Alloy Block", "Crystalline Circuit", "Polymerized Gel", "Pure Lubricant", "Refined Solvent", "Cutting Fluid Solution"]),
+	5: new Set(["Bipolar Nanoflake", "Crystalline Electronic Unit", "D32 Steel", "Polymerization Preparation"]),
+	
+	103: new Set(["Caster Chip", "Defender Chip", "Guard Chip", "Medic Chip", "Sniper Chip", "Specialist Chip", "Supporter Chip", "Vanguard Chip"]),
+	104: new Set(["Caster Chip Pack", "Defender Chip Pack", "Guard Chip Pack", "Medic Chip Pack", "Sniper Chip Pack", "Specialist Chip Pack", "Supporter Chip Pack", "Vanguard Chip Pack"]),
+	105: new Set(["Caster Dualchip", "Defender Dualchip", "Guard Dualchip", "Medic Dualchip", "Sniper Dualchip", "Specialist Dualchip", "Supporter Dualchip", "Vanguard Dualchip"]),
+
+	202: new Set(["Skill Summary 1"]),
+	203: new Set(["Skill Summary 2"]),
+	204: new Set(["Skill Summary 3"]),
+}
+
 const upgradeMaterials = {
 	// Tier 1
 	'Orirock': new Material(1, {}),
@@ -127,6 +144,7 @@ const RecipeListModule = function () {
 		for (const materialName in upgradeMaterials) {
 			materialList[materialName] = new MaterialEntry();
 		}
+		loadSettings();
 	}
 
 	function createMaterialEntry(materialName) {
@@ -174,9 +192,7 @@ const RecipeListModule = function () {
 				<td id="${htmlName}MatNeeded"></td>
 			</tr>`;
 		$(appendTo).append(matHtml);
-
-		$(`input#${htmlName}InventorySpinner`)[0].lastValue = material.amounts.inventory;
-
+		
 		$(`input#${htmlName}InventorySpinner`).change((spinner) => {
 			let newAmount = parseInt($(spinner.target).val());
 			if (isNaN(newAmount) || newAmount > spinner.target.max) {
@@ -186,31 +202,20 @@ const RecipeListModule = function () {
 				const diff = material.amounts.inventory - newAmount;
 				material.amounts.inventory = newAmount;
 				updateNeededIngredients(material, diff);
+				updateRecipeList();
 				saveSettings();
 			}
 		});
 	}
 
 	function updateNeededIngredients(material, amount) {
-		const htmlName = material.name.replaceAll(' ', '');
 		material.amounts.needed += amount;
-
-		let needed = material.amounts.needed;
-		if (needed <= 0) {
-			needed = 0;
-			$(`#${htmlName}MatRow`).removeClass('listRowCanComplete');
-			$(`#${htmlName}MatRow`).addClass('listRowComplete');
-		}
-		else {
-			$(`#${htmlName}MatRow`).removeClass('listRowComplete');
-		}
-
-		$(`td#${htmlName}MatNeeded`).html(`${needed} / ${material.amounts.recipeTotal}`);
-
-		const recipe = upgradeMaterials[material.name].recipe
-		for(const ingredient in recipe) {
-			const ingredientInfo = {name: ingredient, amounts: materialList[ingredient]};
-			updateNeededIngredients(ingredientInfo, recipe[ingredient] * amount);
+		if ($('#ignoreRecipeMatsCheckbox').prop('checked') == false) {
+			const recipe = upgradeMaterials[material.name].recipe
+			for(const ingredient in recipe) {
+				const ingredientInfo = {name: ingredient, amounts: materialList[ingredient]};
+				updateNeededIngredients(ingredientInfo, recipe[ingredient] * amount);
+			}
 		}
 	}
 
@@ -246,7 +251,7 @@ const RecipeListModule = function () {
 
 			$(`td#${htmlName}MatNeeded`).html(`${needed} / ${material.recipeTotal}`);
 			$(`input#${htmlName}InventorySpinner`).val(material.inventory);
-			
+
 			if (needed == 0) {
 				$(`#${htmlName}MatRow`).removeClass('listRowCanComplete');
 				$(`#${htmlName}MatRow`).addClass('listRowComplete');
@@ -255,26 +260,27 @@ const RecipeListModule = function () {
 			else { 
 				$(`#${htmlName}MatRow`).removeClass('listRowComplete');
 				if ($('#ignoreRecipeMatsCheckbox').prop('checked') == false) {
-					const recipe = upgradeMaterials[materialName].recipe;
-					for (const ingredient in recipe) {
-						// console.log(`Ingredient for ${materialName}: ${ingredient}`)
-						// console.log(materialList[ingredient])
+					if (canCraft(materialName) == true) {
+						$(`#${htmlName}MatRow`).addClass('listRowCanComplete');
+					} else {
+						$(`#${htmlName}MatRow`).removeClass('listRowCanComplete');
 					}
 				}
-				// let canCraft = false;
-				// const recipe = upgradeMaterials[materialName].recipe;
-				// for (const ingredient in recipe) {
-				// 	const ingredientNeeded = (recipe[ingredient] * needed);
-				// 	canCraft = materialList[ingredient].needed < ingredientNeeded;
-				// }
-
-				// if (canCraft == true) {
-				// 	$(`#${htmlName}MatRow`).addClass('listRowCanComplete');
-				// } else {
-				// 	$(`#${htmlName}MatRow`).removeClass('listRowCanComplete');
-				// }
 			}
 		}
+	}
+
+	function canCraft(materialName) {
+		const recipe = upgradeMaterials[materialName].recipe;
+		let enoughMaterials = false;
+		for(const ingredient in recipe) {
+			const needed = recipe[ingredient] * materialList[materialName].needed;
+			enoughMaterials = needed <= materialList[ingredient].inventory;
+			if (enoughMaterials === false) {
+				break;
+			}
+		}
+		return enoughMaterials;
 	}
 
 	function saveSettings() {
