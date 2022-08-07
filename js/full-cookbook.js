@@ -1,17 +1,14 @@
 "use strict";
+let SelectedOperatorDb = function () {
+
+}();
+
 
 let OperatorListFullModule = function () {
-
 	let selectedOperatorList = {};
-	let recipeModule;
 
-	function init(inRecipeModule) {
-		recipeModule = inRecipeModule;
-		setTimeout(() => {
-			loadSettings();
-			recipeModule.load();
-			recipeModule.update();
-		}, 0);
+	function init() {
+		setTimeout(() => loadSettings(), 0);
 		
 		$('#ignoreRecipeMatsCheckbox').change(() => {
 			setTimeout(refreshRecipeList(), 0);
@@ -19,47 +16,59 @@ let OperatorListFullModule = function () {
 	}
 
 	function refreshRecipeList() {
-		recipeModule.refresh();
+		RecipeListModule.toggle();
+		RecipeListModule.clear();
 		for(const name in selectedOperatorList) {
 			const entry = selectedOperatorList[name];
-			fillOperatorRecipe(entry);
+			const operator = entry.operator;
+			for(let i = entry.currentRank; i <= entry.goalRank; i++) {
+				updateMaterials(operator.promoMats[i]);
+			}
+	
+			for (let i = entry.skillLevel; i <= entry.skillLevelGoal; i++) {
+				updateMaterials(skillUpgradeDb[operator.name].recipes[i]);
+			}
+	
+			for (let i = 0; i < entry.skillMastery.length; i++) {
+				for(let j = entry.skillMastery[i]; j <= entry.skillMasteryGoals[i]; j++ ) {
+					const index = ((i + 1) * 10) + j
+					updateMaterials(skillUpgradeDb[operator.name].recipes[index]);
+				}
+			}
 		}
-		recipeModule.update();
 	}
 
 	function fillOperatorRecipe(entry) {
 		const operator = entry.operator;
 		for(let i = entry.currentRank; i <= entry.goalRank; i++) {
-			updateMaterials(operator.promoMats[i]);
+			addMaterials(operator.promoMats[i]);
 		}
 
 		for (let i = entry.skillLevel; i <= entry.skillLevelGoal; i++) {
-			updateMaterials(skillUpgradeDb[operator.name].recipes[i]);
+			addMaterials(skillUpgradeDb[operator.name].recipes[i]);
 		}
 
 		for (let i = 0; i < entry.skillMastery.length; i++) {
 			for(let j = entry.skillMastery[i]; j <= entry.skillMasteryGoals[i]; j++ ) {
 				const index = ((i + 1) * 10) + j
-				updateMaterials(skillUpgradeDb[operator.name].recipes[index]);
+				addMaterials(skillUpgradeDb[operator.name].recipes[index]);
 			}
 		}
-		setTimeout(recipeModule.update, 0);
 	}
 
 	function addOperatorToList(entry) {
 		const operator = entry.operator;
-		if(operator.name in selectedOperatorList == true) {
-			return;
+		if(operator.name in selectedOperatorList == false) {
+			selectedOperatorList[operator.name] = entry;
+
+			/* HTML things to add */
+			buildOperatorCard(entry);
+	
+			/* Ingredients to add */
+			fillOperatorRecipe(entry);
+	
+			saveSettings();
 		}
-		selectedOperatorList[operator.name] = entry;
-
-		/* HTML things to add */
-		buildOperatorCard(entry);
-
-		/* Ingredients to add */
-		fillOperatorRecipe(entry);
-
-		saveSettings();
 	}
 
 	function removeOperatorFromList(operator) {
@@ -71,23 +80,21 @@ let OperatorListFullModule = function () {
 		/* Ingredients to remove */
 		const entry = selectedOperatorList[operator.name];
 		for(let i = entry.currentRank; i < entry.goalRank; i++) {
-			updateMaterials(operator.promoMats[i], -1);
+			addMaterials(operator.promoMats[i] * -1);
 		}
 
 		for (let i = entry.skillLevel; i <= entry.skillLevelGoal; i++) {
-			updateMaterials(skillUpgradeDb[operator.name].recipes[i], -1);
+			addMaterials(skillUpgradeDb[operator.name].recipes[i] * -1);
 		}
 
 		for (let i = 0; i < entry.skillMastery.length; i++) {
 			for(let j = entry.skillMastery[i]; j <= entry.skillMasteryGoals[i]; j++ ) {
 				const index = ((i + 1) * 10) + j
-				updateMaterials(skillUpgradeDb[operator.name].recipes[index], -1);
+				addMaterials(skillUpgradeDb[operator.name].recipes[index] * -1);
 			}
 		}
 		delete selectedOperatorList[operator.name];
 		saveSettings();
-		recipeModule.save();
-		recipeModule.update();
 	}
 
 	function buildStatCard(title, opName, min, max, currentVal = 0, goalVal = 0) {
@@ -209,7 +216,7 @@ let OperatorListFullModule = function () {
 				entry.currentRank = newRank;
 			}
 			else {
-				updateRecipeFromRank(entry, entry.goalRank, newRank, -1);
+				updateRecipeFromRank(entry, newRank, entry.goalRank);
 			}
 
 			entry.goalLevel = maxLevel;
@@ -225,7 +232,6 @@ let OperatorListFullModule = function () {
 			else {
 				entry.level = level;
 				saveSettings();
-				// Update the goals here
 			}
 		});
 
@@ -237,7 +243,6 @@ let OperatorListFullModule = function () {
 			else {
 				entry.goalLevel = level;
 				saveSettings();
-				// Update the goals here
 			}
 		});
 
@@ -284,7 +289,6 @@ let OperatorListFullModule = function () {
 				let fromLevel = entry.skillMastery[idx] + skillIdxBase;
 				updateRecipeFromSkillLv(operatorName, fromLevel, toLevel);
 				entry.skillMastery[idx] = newLevel;
-				console.log('Setting skill mastery')
 				saveSettings();
 			});
 
@@ -302,46 +306,49 @@ let OperatorListFullModule = function () {
 					entry.skillMastery[idx] = newLevel;
 				}
 				else {
-					updateRecipeFromSkillLv(operatorName, fromLevel, toLevel, -1);
+					updateRecipeFromSkillLv(operatorName, fromLevel, toLevel);
 				}
-
 				entry.skillMasteryGoals[idx] = newLevel;
 				saveSettings();
 			});
 		}
 	}
 
-	function updateRecipeFromSkillLv(operatorName, fromLevel, toLevel, multiplier=1) {
+	function updateRecipeFromSkillLv(operatorName, fromLevel, toLevel) {
 		if (fromLevel > toLevel) {
 			for(let i = fromLevel; i > toLevel; i--) {
-				updateMaterials(skillUpgradeDb[operatorName].recipes[i], 1 * multiplier);
+				addMaterials(skillUpgradeDb[operatorName].recipes[i]);
 			}
 		} 
 		else {
 			for(let i = toLevel; i > fromLevel; i--) {
-				updateMaterials(skillUpgradeDb[operatorName].recipes[i], -1 * multiplier);
+				addMaterials(skillUpgradeDb[operatorName].recipes[i], -1);
 			}
 		}
-		recipeModule.update();
 	}
 
-	function updateRecipeFromRank(operatorEntry, fromRank, toRank, multiplier=1) {
+	function updateRecipeFromRank(operatorEntry, fromRank, toRank) {
 		if (fromRank > toRank) {
 			for(let i = fromRank; i > toRank; i--) {
-				updateMaterials(operatorEntry.operator.promoMats[i], 1 * multiplier);
+				addMaterials(operatorEntry.operator.promoMats[i]);
 			}
 		} 
 		else {
 			for(let i = toRank; i > fromRank; i--) {
-				updateMaterials(operatorEntry.operator.promoMats[i], -1 * multiplier);
+				addMaterials(operatorEntry.operator.promoMats[i], -1);
 			}
 		}
-		recipeModule.update();
 	}
 
-	function updateMaterials(materials, multiplier=1) {
+	function addMaterials(materials, multiplier=1) {
 		for (const material in materials) {
-			recipeModule.add(material, materials[material] * multiplier);
+			RecipeListModule.add(material, materials[material] * multiplier);
+		}
+	}
+
+	function updateMaterials(materials) {
+		for (const material in materials) {
+			RecipeListModule.addEntry(material);
 		}
 	}
 

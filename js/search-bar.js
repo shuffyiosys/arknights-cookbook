@@ -164,11 +164,19 @@ const searchBar = function () {
 	}
 
 	function saveSettings() {
-		let guiSettings = {
-			'lastNameSearched': $('#name-input').val(),
-			'classesSelected': [],
-			'raritySelected': [],
+		let guiSettings = JSON.parse(localStorage.getItem('arknightsRecipeGui'));
+		if (guiSettings === null) {
+			guiSettings = {
+				'lastNameSearched': $('#name-input').val(),
+				'classesSelected': [],
+				'raritySelected': [],
+			}
 		}
+		else {
+			guiSettings.classesSelected = [];
+			guiSettings.raritySelected = [];
+		}
+		guiSettings.lastNameSearched = $('#name-input').val();
 
 		classNames.forEach(className => {
 			const htmlName = className.toLowerCase();
@@ -186,7 +194,6 @@ const searchBar = function () {
 	function loadSettings() {
 		let guiSettings = JSON.parse(localStorage.getItem('arknightsRecipeGui'));
 		if (guiSettings !== null) {
-			$('#ignoreRecipeMatsCheckbox').prop('checked', guiSettings.ignoreMatRecipes);
 			$('#name-input').val(guiSettings.lastNameSearched);
 
 			for(let i = 0; i < guiSettings.classesSelected.length; i++) {

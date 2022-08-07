@@ -130,8 +130,150 @@ const upgradeMaterials = {
 	'Skill Summary 3': new Material(204, {}),
 };
 
-const RecipeListModule = function () {
+const tierBackgroundColors = {
+	1: `#888`,
+	2: `#DBE537`,
+	3: `#03B1F4`,
+	4: `#D5C5D8`,
+	5: `#FFCA08`,
+	103: `#03B1F4`,
+	104: `#D5C5D8`,
+	105: `#FFCA08`
+}
+
+const materialDbModule = function() {
 	let materialList = {};
+	function init() {
+		for (const materialName in upgradeMaterials) {
+			materialList[materialName] = new MaterialEntry();
+		}
+		loadInventory();
+	};
+
+	function updateInventory(materialName, amount) {
+		const material = materialList[materialName];
+		material.inventory += amount;
+		material.needed -= amount;
+		const recipe = upgradeMaterials[materialName].recipe
+		for(const ingredientName in recipe) {
+			updateNeeded(ingredientName, recipe[ingredientName] * amount);
+		}
+	}
+
+	function updateNeeded(materialName, amount) {
+		materialList[materialName].needed -= amount;
+		const recipe = upgradeMaterials[materialName].recipe
+		for(const ingredientName in recipe) {
+			updateNeeded(ingredientName, recipe[ingredientName] * amount);
+		}
+	}
+
+	function updateRecipe(materialName, amount) {
+		if (materialName in materialList == false || materialName === "") {
+			console.log(`Could not find this material: ${materialName}`);
+			return;
+		}
+		const material = materialList[materialName];
+		material.recipeTotal += (amount);
+		material.needed += (amount);
+
+		const recipe = upgradeMaterials[materialName].recipe;
+		for (const ingredientName in recipe) {
+			updateRecipe(ingredientName, recipe[ingredientName] * amount);
+		}
+	}
+
+	function canCraft(materialName) {
+		const recipe = upgradeMaterials[materialName].recipe;
+		let enoughMaterials = false;
+		for(const ingredientName in recipe) {
+			const needed = recipe[ingredientName] * materialList[materialName].needed;
+			enoughMaterials = needed <= materialList[ingredientName].inventory;
+			if (enoughMaterials === false) {
+				break;
+			}
+		}
+		return enoughMaterials;
+	}
+
+	function getCraftableMats(ingredientName) {
+		const nextTier = upgradeMaterials[ingredientName].tier + 1;
+		const craftableList = materialTierIndex[nextTier];
+		const ingredient = materialList[ingredientName];
+		let craftableMats = {};
+
+		if (craftableList) {
+			craftableList.forEach((materialName) => {
+				const recipe = upgradeMaterials[materialName].recipe;
+				const recipeSize = Object.keys(recipe).length;
+				const material = materialList[materialName];
+				let enoughCount = 0;
+				craftableMats[materialName] = false;
+				if (ingredientName in recipe) {
+					const needed = material.needed * recipe[ingredientName];
+					console.log(`${materialName} - Needed: ${material.needed} | Recipe ${recipe[ingredientName]}`, ingredient.inventory)
+					if(ingredient.inventory >= needed) { 
+						enoughCount ++;
+					}
+					if (enoughCount == recipeSize) {
+						craftableMats[materialName] = true;
+					}
+				}
+					
+			})
+		}
+		return craftableMats;
+	}
+
+	function getMaterial(materialName) {
+		return materialList[materialName];
+	}
+
+	function getDatabase() {
+		return materialList;
+	}
+
+	function clearDb() {
+		for (const materialName in upgradeMaterials) {
+			materialList[materialName] = new MaterialEntry();
+		}
+		localStorage.removeItem('arknightsRecipeInventory');
+	}
+
+	function saveInventory() {
+		let savedInventory = {};
+		for (const materialName in materialList) {
+			if (materialList[materialName].recipeTotal > 0) {
+				savedInventory[materialName] = { 'inventory': materialList[materialName].inventory};
+			}
+		}
+		localStorage.setItem('arknightsRecipeInventory', JSON.stringify(savedInventory));
+	}
+
+	function loadInventory() {
+		let inventory = JSON.parse(localStorage.getItem('arknightsRecipeInventory'));
+		if (inventory !== null) {
+			for (const materialName in inventory) {
+				updateInventory(materialName, inventory[materialName].inventory);
+			}
+		}
+	}
+
+	return {
+		init: init,
+		updateInventory: updateInventory,
+		updateRecipe: updateRecipe,
+		canCraft: canCraft,
+		getCraftable: getCraftableMats,
+		get: getMaterial,
+		getAll: getDatabase,
+		clear: clearDb,
+		save: saveInventory
+	}
+}();
+
+const RecipeListModule = function () {
+	let recursiveRecipe = true;
 
 	function init() {
 		for (let matTierNum = 1; matTierNum <= 5; matTierNum++) {
@@ -141,32 +283,37 @@ const RecipeListModule = function () {
 		$(`#recipeTable`).append(`<tbody id="ChipPackList"></tbody>`);
 		$(`#recipeTable`).append(`<tbody id="DualchipList"></tbody>`);
 
-		for (const materialName in upgradeMaterials) {
-			materialList[materialName] = new MaterialEntry();
+		let guiSettings = JSON.parse(localStorage.getItem('arknightsRecipeGui'));
+		if (guiSettings !== null) {
+			$('#ignoreRecipeMatsCheckbox').prop('checked', !guiSettings.recursiveRecipe);
+			recursiveRecipe = guiSettings.recursiveRecipe;
 		}
-		loadSettings();
+	}
+
+	function addMaterialToRecipe(materialName, amount) {
+		materialDbModule.updateRecipe(materialName, amount);
+		addMaterialEntry(materialName)
+	}
+
+	function addMaterialEntry(materialName) {
+		const material = materialDbModule.get(materialName);
+		const htmlName = materialName.replaceAll(' ', '');
+		if ($(`#${htmlName}MatRow`).length == 0 && material.recipeTotal > 0) {
+			createMaterialEntry(materialName);
+		}
+		updateMaterialEntry(materialName);
+
+		if (recursiveRecipe === true) {
+			const recipe = upgradeMaterials[materialName].recipe;
+			for(const ingredientName in recipe) {
+				addMaterialEntry(ingredientName);
+			}
+		}
 	}
 
 	function createMaterialEntry(materialName) {
-		const material = {name: materialName, amounts: materialList[materialName]};
+		const material = materialDbModule.get(materialName);
 		const htmlName = materialName.replaceAll(' ', '');
-		if ($(`#${htmlName}MatRow`).length != 0 || material.amounts.recipeTotal == 0) {
-			return;
-		}
-
-		material.amounts.needed -= material.amounts.inventory;
-
-		const tierBackgroundColors = {
-			1: `#888`,
-			2: `#DBE537`,
-			3: `#03B1F4`,
-			4: `#D5C5D8`,
-			5: `#FFCA08`,
-			103: `#03B1F4`,
-			104: `#D5C5D8`,
-			105: `#FFCA08`
-		}
-
 		const fileName = materialName.replaceAll(' ', '_');
 		const tier = upgradeMaterials[materialName].tier;
 
@@ -188,7 +335,7 @@ const RecipeListModule = function () {
 				<td><div class="materialIcon" style="background-image: url('${matIconsPath}${fileName}.webp'); background-color: ${matBackground}"></div></td>
 				<td>${materialName}</td>
 				<td>${tierName}</td>
-				<td><input id="${htmlName}InventorySpinner" type="number" min="0" max="999" value="${material.amounts.inventory}">
+				<td><input id="${htmlName}InventorySpinner" type="number" min="0" max="999" value="${material.inventory}">
 				<td id="${htmlName}MatNeeded"></td>
 			</tr>`;
 		$(appendTo).append(matHtml);
@@ -198,129 +345,70 @@ const RecipeListModule = function () {
 			if (isNaN(newAmount) || newAmount > spinner.target.max) {
 				return;
 			}
-			else {
-				const diff = material.amounts.inventory - newAmount;
-				material.amounts.inventory = newAmount;
-				updateNeededIngredients(material, diff);
-				updateRecipeList();
-				saveSettings();
+			const diff = newAmount - material.inventory;
+			materialDbModule.updateInventory(materialName, diff);
+			updateMaterialEntry(materialName);
+
+			if (recursiveRecipe === true) {
+				updateCraftableMaterials(materialName);
 			}
+			materialDbModule.save();
 		});
 	}
+	
+	function updateMaterialEntry(materialName) {
+		const material = materialDbModule.get(materialName);
+		const htmlName = materialName.replaceAll(' ', '');
 
-	function updateNeededIngredients(material, amount) {
-		material.amounts.needed += amount;
-		if ($('#ignoreRecipeMatsCheckbox').prop('checked') == false) {
-			const recipe = upgradeMaterials[material.name].recipe
-			for(const ingredient in recipe) {
-				const ingredientInfo = {name: ingredient, amounts: materialList[ingredient]};
-				updateNeededIngredients(ingredientInfo, recipe[ingredient] * amount);
-			}
-		}
-	}
-
-	function addMaterialToRecipe(materialName, amount, multiplier = 1) {
-		if (materialName in materialList == false || materialName === "") {
-			console.log(`Could not find this material: ${materialName}`);
+		if (material.recipeTotal == 0) {
+			$(`#${htmlName}MatRow`).remove();
 			return;
 		}
+		let needed = material.needed;
+		needed = (needed < 0) ? 0 : needed;
 
-		materialList[materialName].recipeTotal += (amount * multiplier);
-		materialList[materialName].needed += (amount * multiplier);
+		$(`td#${htmlName}MatNeeded`).html(`${needed} / ${material.recipeTotal}`);
+		$(`input#${htmlName}InventorySpinner`).val(material.inventory);
 
-		createMaterialEntry(materialName);
-		if ($('#ignoreRecipeMatsCheckbox').prop('checked') == false) {
-			const recipe = upgradeMaterials[materialName].recipe;
-			for (const ingredient in recipe) {
-				addMaterialToRecipe(ingredient, recipe[ingredient], amount * multiplier);
+		$(`#${htmlName}MatRow`).removeClass('listRowCanComplete');
+		$(`#${htmlName}MatRow`).removeClass('listRowComplete');
+		if (needed == 0) {
+			$(`#${htmlName}MatRow`).addClass('listRowComplete');
+		}
+		else if (recursiveRecipe === true) {
+			if (materialDbModule.canCraft(materialName)) {
+				$(`#${htmlName}MatRow`).addClass('listRowCanComplete');
+			}
+			for (const ingredientName in upgradeMaterials[materialName].recipe) {
+				updateMaterialEntry(ingredientName);
 			}
 		}
 	}
 
-	function updateRecipeList() {
-		for (const materialName in materialList) {
-			const material = materialList[materialName];
-			const htmlName = materialName.replaceAll(' ', '');
-
-			if (material.recipeTotal == 0) {
-				$(`#${htmlName}MatRow`).remove();
-				continue;
+	function updateCraftableMaterials(materialName) {
+		const craftableMaterials = materialDbModule.getCraftable(materialName);
+		for(const craftableName in craftableMaterials) {
+			const craftableHtmlName = craftableName.replaceAll(' ', '');
+			if (craftableMaterials[craftableName] === true) {
+				$(`#${craftableHtmlName}MatRow`).addClass('listRowCanComplete');
 			}
-			let needed = material.needed;
-			needed = (needed < 0) ? 0 : needed;
-
-			$(`td#${htmlName}MatNeeded`).html(`${needed} / ${material.recipeTotal}`);
-			$(`input#${htmlName}InventorySpinner`).val(material.inventory);
-
-			if (needed == 0) {
-				$(`#${htmlName}MatRow`).removeClass('listRowCanComplete');
-				$(`#${htmlName}MatRow`).addClass('listRowComplete');
-				
-			} 
-			else { 
-				$(`#${htmlName}MatRow`).removeClass('listRowComplete');
-				if ($('#ignoreRecipeMatsCheckbox').prop('checked') == false) {
-					if (canCraft(materialName) == true) {
-						$(`#${htmlName}MatRow`).addClass('listRowCanComplete');
-					} else {
-						$(`#${htmlName}MatRow`).removeClass('listRowCanComplete');
-					}
-				}
+			else {
+				$(`#${craftableHtmlName}MatRow`).removeClass('listRowCanComplete');
 			}
 		}
 	}
 
-	function canCraft(materialName) {
-		const recipe = upgradeMaterials[materialName].recipe;
-		let enoughMaterials = false;
-		for(const ingredient in recipe) {
-			const needed = recipe[ingredient] * materialList[materialName].needed;
-			enoughMaterials = needed <= materialList[ingredient].inventory;
-			if (enoughMaterials === false) {
-				break;
-			}
+	function toggleMode() {
+		recursiveRecipe = !recursiveRecipe;
+		let guiSettings = JSON.parse(localStorage.getItem('arknightsRecipeGui'));
+		if (guiSettings === null) {
+			guiSettings = {};
 		}
-		return enoughMaterials;
-	}
-
-	function saveSettings() {
-		let savedInventory = {};
-		for (const materialName in materialList) {
-			if (materialList[materialName].recipeTotal > 0) {
-				savedInventory[materialName] = materialList[materialName];
-			}
-		}
-		localStorage.setItem('arknightsRecipeInventory', JSON.stringify(savedInventory));
-	}
-
-	function loadSettings() {
-		let inventory = JSON.parse(localStorage.getItem('arknightsRecipeInventory'));
-		if (inventory !== null) {
-			for (const materialName in inventory) {
-				Object.assign(materialList[materialName], inventory[materialName]);
-			}
-		}
-	}
-
-	function refreshRecipeList() {
-		for (const materialName in materialList) {
-			materialList[materialName].recipeTotal = 0;
-			materialList[materialName].needed = 0;
-		}
-		for (let matTierNum = 1; matTierNum <= 5; matTierNum++) {
-			const htmlName = `tier${matTierNum}MatsList`
-			$(`#${htmlName}`).html('');
-		}
-		$('#ChipList').html('');
-		$('#ChipPackList').html('');
-		$('#DualchipList').html('');
-		saveSettings();
+		guiSettings['recursiveRecipe'] = recursiveRecipe;
+		localStorage.setItem('arknightsRecipeGui', JSON.stringify(guiSettings));
 	}
 
 	function clearRecipeList() {
-		for (const materialName in materialList) {
-			materialList[materialName] = new MaterialEntry();
-		}
 		for (let matTierNum = 1; matTierNum <= 5; matTierNum++) {
 			const htmlName = `tier${matTierNum}MatsList`
 			$(`#${htmlName}`).html('');
@@ -328,17 +416,13 @@ const RecipeListModule = function () {
 		$('#ChipList').html('');
 		$('#ChipPackList').html('');
 		$('#DualchipList').html('');
-		saveSettings();
 	}
 
 	return {
 		init: init,
 		add: addMaterialToRecipe,
+		addEntry: addMaterialEntry,
 		clear: clearRecipeList,
-		update: updateRecipeList,
-		refresh: refreshRecipeList,
-		load: loadSettings,
-		save: saveSettings,
-		get: () => {return materialList}
+		toggle: toggleMode,
 	}
 }();
