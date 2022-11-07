@@ -82,12 +82,13 @@ const COOKBOOK_DATABASE = function() {
 				}
 			});
 
-			for(let level = 3; level < 8; level ++) {
-				const skillRecipe = SKILL_UPGRADES[operatorName].recipes[level];
-				for (const ingredientName in skillRecipe) {
-					console.log(ingredientName);
-					updateMaterialRecipe(ingredientName, skillRecipe[ingredientName])
-					updateMaterialIventory(ingredientName, materialList[ingredientName].inventory);
+			if (operatorName in SKILL_UPGRADES === true) {
+				for(let level = 3; level < 8; level ++) {
+					const skillRecipe = SKILL_UPGRADES[operatorName].recipes[level];
+					for (const ingredientName in skillRecipe) {
+						updateMaterialRecipe(ingredientName, skillRecipe[ingredientName])
+						updateMaterialIventory(ingredientName, materialList[ingredientName].inventory);
+					}
 				}
 			}
 			return entry;
@@ -129,10 +130,12 @@ const COOKBOOK_DATABASE = function() {
 			}
 		}
 
-		for(let level = entry.skillLevelGoal; level > entry.skillLevel; level --) {
-			const skillRecipe = SKILL_UPGRADES[operatorName].recipes[level];
-			for (const ingredientName in skillRecipe) {
-				updateMaterialRecipe(ingredientName, -skillRecipe[ingredientName])
+		if (operatorName in SKILL_UPGRADES === true) {
+			for(let level = entry.skillLevelGoal; level > entry.skillLevel; level --) {
+				const skillRecipe = SKILL_UPGRADES[operatorName].recipes[level];
+				for (const ingredientName in skillRecipe) {
+					updateMaterialRecipe(ingredientName, -skillRecipe[ingredientName])
+				}
 			}
 		}
 

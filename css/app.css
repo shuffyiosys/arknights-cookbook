@@ -224,13 +224,26 @@ div.col-sm-8 > div > div.stats-card {
 	margin-left: 8px;
 }
 
-.materialIcon {
+.materialIconBase {
 	width: 64px;
 	height: 64px;
-	min-width: 64px; 
 	margin-right: 12px;
 	border-radius: 32px;
 	background-size: contain;
 	background-position: center center;
 	background-repeat: no-repeat;
+}
+
+.materialIconMd {
+	width: 64px;
+	height: 64px;
+}
+
+.materialIconSm {
+	width: 48px;
+	height: 48px;
+}
+
+.operatorRecipeRow {
+	border-top: 2px solid #AAA;
 }

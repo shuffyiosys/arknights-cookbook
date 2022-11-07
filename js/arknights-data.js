@@ -12,16 +12,20 @@ const CLASS = {
 	VANGUARD:   128 
 }
 
+let operatorId = 1;
+
 class OperatorData {
 	constructor(opClass, rarity, e1Mats, e2Mats) {
 		this.opClass = opClass;
 		this.rarity = rarity;
-		this.promoMats = [{}, e1Mats, e2Mats];
+		this.promoMats = [{}, {}, {}];
+		this.id = operatorId++;
 
 		// Calculate upgrade chips needed
 		const classString = this.opClass_toString(opClass);
 		if (rarity >= 4) {
 			this.promoMats[1][`${classString} Chip`] = (rarity - 1);
+			Object.assign(this.promoMats[1], e1Mats);
 		}
 		
 		if (rarity == 4) {
@@ -32,6 +36,10 @@ class OperatorData {
 		}
 		else if (rarity == 6) {
 			this.promoMats[2][`${classString} Dualchip`] = 4;
+		}
+
+		if(rarity >= 5) {
+			Object.assign(this.promoMats[2], e2Mats);
 		}
 	}
 
@@ -69,6 +77,8 @@ class SkillRecipe {
 	constructor(recipes, names=[]) {
 		this.recipes = recipes;
 		this.names = names
+
+        this.recipes[2] = {};
 	}
 };
 
@@ -311,6 +321,29 @@ const OPERATOR_DATA = {
 "W":            new OperatorData(CLASS.SNIPER,       6, {"Orirock Cube": 12, "Polyester": 5}, {"Bipolar Nanoflake": 4, "Keton Colloid": 7}),
 "Weedy":        new OperatorData(CLASS.SPECIALIST,   6, {"Device": 6, "Sugar": 3},           {"D32 Steel": 4, "Manganese Trihydrate": 6}),
 };
+
+const RANK_PROMO_COST = {
+    1: [],
+    2: [],
+    3: [10000],
+    4: [15000, 60000],
+    5: [20000, 120000],
+    6: [30000, 180000]
+}
+
+/* Note that skill summary types can be inferred from the level 
+    2-3: Summary 1
+    4-6: Summary 2
+    7+: Summary 3
+*/
+const SKILL_SUMMARIES = {
+    1: [],
+    2: [],
+    3: [0, 0, 1, 2, 1, 1, 1, 2],
+    4: [0, 0, 2, 2, 3, 3, 3, 4, 2, 4, 6],
+    5: [0, 0, 4, 4, 6, 6, 6, 6, 5, 6, 10],
+    6: [0, 0, 5, 5, 8, 8, 8, 8, 8, 12, 15]
+}
 
 const SKILL_UPGRADES = {
 	"Andachiel": new SkillRecipe({3: { "Orirock": 2 }, 4: { "Sugar": 1 }, 5: { "Polyester": 2 }, 6: { "RMA70-12": 1 }, 7: { "Orirock Cluster": 2 }}),
@@ -1050,6 +1083,9 @@ class Material {
 };
 
 const UPGRADE_MATERIALS = {
+    // Tier 0
+    'LMD': new Material(1, {}),
+
 	// Tier 1
 	'Orirock': new Material(1, {}),
 	'Oriron Shard': new Material(1, {}),
