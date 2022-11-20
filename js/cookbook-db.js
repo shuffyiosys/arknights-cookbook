@@ -37,18 +37,18 @@ function getSummaries(rarity, level) {
 
 /* DB Entry classes **********************************************************/
 class OperatorEntry {
-	/* 	EXPECTATION: Create an object with default values, then use
-		Object.assign to update them. */
 	constructor() {
 		this.level = 1;
-		this.currentRank = 0;
-		this.goalLevel = 50;
-		this.goalRank = 1;
+		this.rank = 0;
+		this.goalRank = 0;
 
 		this.skillLevel = 1;
-		this.skillLevelGoal = 7;
+		this.skillLevelGoal = 1;
 		this.skillMastery = [0, 0, 0];
 		this.skillMasteryGoals = [0, 0, 0];
+
+		this.finalized = false;
+		this.completedRecipes = {};
 	}
 }
 
@@ -72,25 +72,8 @@ const COOKBOOK_DATABASE = function() {
 	function createOperatorEntry(operatorName) {
 		if (operatorName in operatorList === false) {
 			const entry = new OperatorEntry();
-			entry.goalRank = getMaxRank(OPERATOR_DATA[operatorName].rarity);
 			operatorList[operatorName] = entry;
 			localStorage.setItem('arknightsRecipeOperators', JSON.stringify(operatorList));
-	
-			OPERATOR_DATA[operatorName].promoMats.forEach(recipe => {
-				for (const ingredientName in recipe) {
-					updateMaterialRecipe(ingredientName, recipe[ingredientName])
-				}
-			});
-
-			if (operatorName in SKILL_UPGRADES === true) {
-				for(let level = 3; level < 8; level ++) {
-					const skillRecipe = SKILL_UPGRADES[operatorName].recipes[level];
-					for (const ingredientName in skillRecipe) {
-						updateMaterialRecipe(ingredientName, skillRecipe[ingredientName])
-						updateMaterialIventory(ingredientName, materialList[ingredientName].inventory);
-					}
-				}
-			}
 			return entry;
 		}
 		return null;
@@ -120,25 +103,6 @@ const COOKBOOK_DATABASE = function() {
 	}
 
 	function deleteOperator(operatorName) {
-		const entry = operatorList[operatorName];
-		const promoMats = OPERATOR_DATA[operatorName].promoMats;
-		
-		for(let i = entry.goalRank; i > entry.currentRank; i--) {
-			console.log(i, promoMats[i])
-			for (const ingredientName in promoMats[i]) {
-				updateMaterialRecipe(ingredientName, -promoMats[i][ingredientName])
-			}
-		}
-
-		if (operatorName in SKILL_UPGRADES === true) {
-			for(let level = entry.skillLevelGoal; level > entry.skillLevel; level --) {
-				const skillRecipe = SKILL_UPGRADES[operatorName].recipes[level];
-				for (const ingredientName in skillRecipe) {
-					updateMaterialRecipe(ingredientName, -skillRecipe[ingredientName])
-				}
-			}
-		}
-
 		delete operatorList[operatorName];
 		localStorage.setItem('arknightsRecipeOperators', JSON.stringify(operatorList));
 	}
@@ -160,21 +124,22 @@ const COOKBOOK_DATABASE = function() {
 		}
 		let entry = materialList[materialName];
 		entry.needed -= amount;
-
 		const matData = UPGRADE_MATERIALS[materialName];
 		for (const ingredientName in matData.recipe) {
 			const ingredientNeeded = matData.recipe[ingredientName] * amount;
 			updateMaterialNeeded(ingredientName, ingredientNeeded);
 		}
+		localStorage.setItem('arknightsRecipeInventory', JSON.stringify(materialList));
+		return entry;
 	}
 
-	function updateMaterialIventory(materialName, amount) {
+	function updateMaterialInventory(materialName, amount) {
 		if ((materialName in materialList) === false) {
 			return;
 		}
 		let entry = materialList[materialName];
 		entry.inventory += amount;
-		updateMaterialNeeded(materialName, amount);
+		if (entry.inventory < 0) { entry.inventory = 0; }
 		localStorage.setItem('arknightsRecipeInventory', JSON.stringify(materialList));
 		return entry;
 	}
@@ -261,7 +226,8 @@ const COOKBOOK_DATABASE = function() {
 		deleteOperator: deleteOperator,
 		deleteAllOperators: deleteAllOperators,
 
-		updateInventory: updateMaterialIventory,
+		updateInventory: updateMaterialInventory,
+		updateMaterialNeeded: updateMaterialNeeded,
 		updateRecipe: updateMaterialRecipe,
 		getMaterials: getMaterialsEntry,
 		getMaterialList: getMaterialList,

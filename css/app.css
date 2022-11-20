@@ -244,6 +244,6 @@ div.col-sm-8 > div > div.stats-card {
 	height: 48px;
 }
 
-.operatorRecipeRow {
-	border-top: 2px solid #AAA;
+.operatorRecipeTable tr{
+	width: 100%;
 }
