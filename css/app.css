@@ -169,6 +169,31 @@ div.col-sm-8 > div > div.stats-card {
 	border-top: 2px solid #DDD;
 }
 
+.operatorRecipeTable {
+	width: 100%;
+}
+
+.operatorRecipeTable > tr {
+	width: 100%;
+	display: inline-block;
+}
+
+.operatorRecipeTable > tr > td:first-child {
+	width: 200px;
+}
+
+.operatorRecipeTable > tr > td:nth-child(2) {
+	width: 72px;
+	padding-right: 12px;
+	text-align: right;
+}
+
+.operatorRecipeTable > tr > td:nth-child(2n + 4) {
+	width: 40px;
+	padding-right: 12px;
+	text-align: right;
+}
+
 .materialTableList {
 	table-layout: fixed;
 	width: 100%;
@@ -242,8 +267,4 @@ div.col-sm-8 > div > div.stats-card {
 .materialIconSm {
 	width: 48px;
 	height: 48px;
-}
-
-.operatorRecipeTable tr{
-	width: 100%;
 }

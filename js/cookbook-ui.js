@@ -10,6 +10,8 @@ function getIconName(name) {
 }
 
 const UI_MODULE = function() {
+const getKeyLength = x => Object.keys(x).length;
+
 /* General Hanlders **********************************************************/
 function generalUiInit() {
 	$(`#clearAllSelectedBtn`).click(() => {
@@ -201,7 +203,6 @@ const RECIPE_TYPES = {
 }
 
 let ingredientsToRecipe = {};
-let selectedRecipes = {};
 
 function recipeSectionInit() {
 	const savedNames = COOKBOOK_DATABASE.getNames();
@@ -213,6 +214,7 @@ function recipeSectionInit() {
 	for (let matTierNum = 1; matTierNum <= 5; matTierNum++) {
 		$(`#recipeTable`).append(`<tbody id="tier${matTierNum}MatsList"></tbody>`);
 	}
+	$(`#recipeTable`).append(`<tbody id="LMDList"></tbody>`);
 	$(`#recipeTable`).append(`<tbody id="ChipList"></tbody>`);
 	$(`#recipeTable`).append(`<tbody id="ChipPackList"></tbody>`);
 	$(`#recipeTable`).append(`<tbody id="DualchipList"></tbody>`);
@@ -223,6 +225,12 @@ function recipeSectionInit() {
 		buildMaterialRow(materialName);
 	}
 	updateMaterialList();
+	const ingredientsList = COOKBOOK_DATABASE.getMaterialList();
+	for(const ingredientName in ingredientsList) {
+		if (getKeyLength(UPGRADE_MATERIALS[ingredientName].recipe) > 0) {
+			checkRecipeCanComplete(ingredientName);
+		}
+	}
 }
 
 function getOpHtmlName(operatorName) {
@@ -276,33 +284,12 @@ function buildOperatorCard(operatorName, entry) {
 
 	$($(`#${divId} .row .col-2 button`)).click(() => {
 		const operatorEntry = COOKBOOK_DATABASE.getOperator(operatorName);
-		selectedRecipes[operatorName].forEach(recipeId => {
+		for(const recipeId in operatorEntry.completedRecipes) {
 			const operatorData = OPERATOR_DATA[operatorName];
 			updateRecipe(operatorData.recipes[recipeId], -1);
-
-			let recipe = {};
-			if (recipeId >= 100) {
-				recipe['LMD'] = RANK_PROMO_COST[operatorData.rarity][recipeId % 10 - 1];
-			}
-			else if (recipeId >= 10) {
-				recipe['Skill Summary 3'] = operatorData.getSkillSummaryCount((recipeId% 10) + 7);
-			}
-			else {
-				if (2 <= recipeId && recipeId <= 3) {
-					recipe['Skill Summary 1'] = operatorData.getSkillSummaryCount(recipeId);
-				}
-				else if (4 <= recipeId && recipeId <= 6) {
-					recipe['Skill Summary 2'] = operatorData.getSkillSummaryCount(recipeId);
-				}
-				else {
-					recipe['Skill Summary 3'] = operatorData.getSkillSummaryCount(recipeId);
-				}
-			}
-			updateRecipe(recipe, -1);
-		})
+		}
 		$(`#${divId}`).remove();
 		COOKBOOK_DATABASE.deleteOperator(operatorName);
-		delete selectedRecipes[operatorName];
 	});
 
 	$($(`#${divId}`).children()[0]).click(() => {
@@ -342,8 +329,8 @@ function buildOpCardStats(operatorName, entry) {
 	}
 	
 	if (operatorData.rarity >= 4) {
-		goalTableHeader += `<td>${operatorData.skillNames[0]} Mastery</td>`;
-		goalTableHeader += `<td>${operatorData.skillNames[1]} Mastery</td>`;
+		goalTableHeader += `<td>${operatorData.getSkillName(1)} Mastery</td>`;
+		goalTableHeader += `<td>${operatorData.getSkillName(2)} Mastery</td>`;
 
 		nowRowHtml += `<td><input type="number" min="0" max="3" value="${entry.skillMastery[0]}" recipeType="10"/></td>`;
 		nowRowHtml += `<td><input type="number" min="0" max="3" value="${entry.skillMastery[1]}" recipeType="20"/></td>`;
@@ -352,7 +339,7 @@ function buildOpCardStats(operatorName, entry) {
 		goalRowHtml += `<td><input type="number" min="0" max="3" value="${entry.skillMasteryGoals[1]}" recipeType="20"/></td>`
 	}
 	if (operatorData.rarity === 6){
-		goalTableHeader += `<td>${operatorData.skillNames[2]} Mastery</td>`;
+		goalTableHeader += `<td>${operatorData.getSkillName(3)} Mastery</td>`;
 		nowRowHtml += `<td><input type="number" min="0" max="3" value="${entry.skillMastery[2]}" recipeType="30"/></td>`;
 		goalRowHtml += `<td><input type="number" min="0" max="3" value="${entry.skillMasteryGoals[2]}" recipeType="30"/></td>`
 	}
@@ -395,16 +382,10 @@ function buildOpCardStats(operatorName, entry) {
 function initOpRecipes(operatorName) {
 	const htmlName = getOpHtmlName(operatorName);
 	const recipeTableId = `${htmlName}-recipes`;
-	const recipeTableHtml = `<table id="${recipeTableId}"></table>`
+	const recipeTableHtml = `<table id="${recipeTableId}" class="operatorRecipeTable"></table>`
 	$(`#${htmlName}-card-info`).append(recipeTableHtml);
 
 	let operatorEntry = COOKBOOK_DATABASE.getOperator(operatorName);
-	// addOperatorRecipe(operatorEntry.rank, operatorEntry.goalRank, operatorName, RECIPE_TYPES.ELITE_RANK);
-	// addOperatorRecipe(operatorEntry.skillLevel, operatorEntry.skillLevelGoal, operatorName, RECIPE_TYPES.SKILL_LVL);
-	// addOperatorRecipe(operatorEntry.skillMastery[0], operatorEntry.skillMasteryGoals[0], operatorName, RECIPE_TYPES.S1_MASTERY);
-	// addOperatorRecipe(operatorEntry.skillMastery[1], operatorEntry.skillMasteryGoals[1], operatorName, RECIPE_TYPES.S2_MASTERY);
-	// addOperatorRecipe(operatorEntry.skillMastery[2], operatorEntry.skillMasteryGoals[2], operatorName, RECIPE_TYPES.S3_MASTERY);
-
 	for(const recipeId in operatorEntry.completedRecipes) {
 		let recipeType = 0;
 		if (recipeId < 10) {
@@ -423,7 +404,7 @@ function initOpRecipes(operatorName) {
 			recipeType = RECIPE_TYPES.ELITE_RANK;
 		}
 
-		buildRecipeRow(operatorName, recipeId, recipeType)
+		buildRecipeRow(operatorName, recipeId, recipeType);
 		const recipeCompleted = operatorEntry.completedRecipes[recipeId];
 		if(recipeCompleted)	{ 
 			$(`#${recipeId}-${htmlName}-checkbox`).prop('checked','true');
@@ -453,7 +434,7 @@ function buildOpRecipes(operatorName, opCardStatsQuery) {
 		}
 	}
 	const recipeTableId = `${htmlName}-recipes`;
-	const recipeTableHtml = `<table id="${recipeTableId}"></table>`
+	const recipeTableHtml = `<table id="${recipeTableId}" class="operatorRecipeTable"></table>`
 	$(`#${htmlName}-card-info`).append(recipeTableHtml);
 
 	const RECIPE_TYPES_NAMES = Object.keys(RECIPE_TYPES);
@@ -524,12 +505,6 @@ function addOperatorRecipe(baseValue, goalValue, operatorName, recipeType) {
 	for (let i = baseValue + 1; i <= goalValue; i++) {
 		buildRecipeRow(operatorName, i, recipeType);
 	}
-
-	// $(`table#${recipeTableId} tr`).sort(function (a, b) {
-	// 	let contentA =parseInt( $(a).data('sort'));
-	// 	let contentB =parseInt( $(b).data('sort'));
-	// 	return (contentA < contentB) ? -1 : (contentA > contentB) ? 1 : 0;
-	//  }).appendTo(`#${recipeTableId}`)
 }
 
 function buildRecipeRow(operatorName, recipeId, recipeType) {
@@ -540,28 +515,13 @@ function buildRecipeRow(operatorName, recipeId, recipeType) {
 
 	/* Build up complete recipe */
 	if (recipeType === RECIPE_TYPES.ELITE_RANK && operatorData.rarity >= 3) {
-		const idx = (recipeId % 10) - 1;
-		recipe['LMD'] = RANK_PROMO_COST[operatorData.rarity][idx];
 		recipeName = `Elite Rank `;
 	}
 	if (recipeType === RECIPE_TYPES.SKILL_LVL) {
-		if (2 <= recipeId && recipeId <= 3) {
-			recipe['Skill Summary 1'] = operatorData.getSkillSummaryCount(recipeId);
-		}
-		else if (4 <= recipeId && recipeId <= 6) {
-			recipe['Skill Summary 2'] = operatorData.getSkillSummaryCount(recipeId);
-		}
-		else {
-			recipe['Skill Summary 3'] = operatorData.getSkillSummaryCount(recipeId);
-		}
 		recipeName = `Skill Lv `;
 	}
 	else if (recipeType >= RECIPE_TYPES.S1_MASTERY) {
-		const idx = (recipeId % 10) + 7;
-		recipe['Skill Summary 3'] = operatorData.getSkillSummaryCount(idx);
-
 		let skillName = operatorData.getSkillName(parseInt(recipeType/10));
-		skillName = (skillName) ? skillName : `Skill ${parseInt(recipeType/10)}`;
 		recipeName = `${skillName} M`;
 	}
 	Object.assign(recipe, operatorData.recipes[recipeId]);
@@ -585,9 +545,10 @@ function buildRecipeRow(operatorName, recipeId, recipeType) {
 		recipeHtml += `<td>${createMaterialIconHtml(ingredientName, ICON_SIZE.SMALL)}</td>`
 		
 		if (ingredientName in ingredientsToRecipe === false) {
+			console.log(ingredientName)
 			ingredientsToRecipe[ingredientName] = new Set();
 		}
-		ingredientsToRecipe[ingredientName].add(`${recipeId}`);
+		ingredientsToRecipe[ingredientName].add(`${recipeHtmlId}`);
 	}
 	recipeHtml += `</tr>`;
 	$(`#${recipeTableId}`).append(recipeHtml);
@@ -611,24 +572,6 @@ function handleRecipeComplete(event, operatorName) {
 
 	let recipe = {};
 
-	if (recipeId >= 100) {
-		recipe['LMD'] = RANK_PROMO_COST[operatorData.rarity][recipeId % 10 - 1];
-	}
-	else if (recipeId >= 10) {
-		recipe['Skill Summary 3'] = operatorData.getSkillSummaryCount((recipeId% 10) + 7);
-	}
-	else {
-		if (2 <= recipeId && recipeId <= 3) {
-			recipe['Skill Summary 1'] = operatorData.getSkillSummaryCount(recipeId);
-		}
-		else if (4 <= recipeId && recipeId <= 6) {
-			recipe['Skill Summary 2'] = operatorData.getSkillSummaryCount(recipeId);
-		}
-		else {
-			recipe['Skill Summary 3'] = operatorData.getSkillSummaryCount(recipeId);
-		}
-	}
-
 	Object.assign(recipe, operatorData.recipes[recipeId]);
 	let operatorEntry = COOKBOOK_DATABASE.getOperator(operatorName);
 
@@ -649,16 +592,22 @@ function handleRecipeComplete(event, operatorName) {
 			lastIngredient = ingredientName;
 		}
 		operatorEntry.completedRecipes[recipeId] = false;
-		// checkRecipeCanComplete(lastIngredient);
+		checkRecipeCanComplete(lastIngredient);
 	}
 	COOKBOOK_DATABASE.updateOperator(operatorName, operatorEntry);
 	updateMaterialList();
 }
 
 function checkRecipeCanComplete(materialName) {
+	console.log(materialName, ingredientsToRecipe[materialName])
+
+	if((materialName in ingredientsToRecipe) == false) {
+		return;
+	}
 	ingredientsToRecipe[materialName].forEach((recipeName) => {
 		const delimiter = recipeName.search('-');
 		const operatorName = recipeName.substring(delimiter + 1).replaceAll('-', ' ').replaceAll('_', '\'');
+
 		const operatorData = OPERATOR_DATA[operatorName];
 		let recipeId = parseInt(recipeName);
 		let recipe = operatorData.recipes[recipeId];
@@ -671,7 +620,7 @@ function checkRecipeCanComplete(materialName) {
 			}
 		}
 		if ($(`#${recipeName}-checkbox`).prop('checked') === false) {
-			if (enoughMaterials === Object.keys(recipe).length) {
+			if (enoughMaterials === getKeyLength(recipe)) {
 				$(`#${recipeName}`).addClass('listRowCanComplete');
 			}
 			else {
@@ -714,7 +663,7 @@ function createMaterialIconHtml(materialName, size=ICON_SIZE.MEDIUM) {
 
 function buildMaterialRow(materialName) {
 	const materialEntry = COOKBOOK_DATABASE.getMaterials(materialName)[materialName];
-
+	
 	if (materialEntry.recipeTotal === 0) {
 		return;
 	}
@@ -726,9 +675,12 @@ function buildMaterialRow(materialName) {
 	let appendTo = '';
 	let tierName = `${tier}`;
 
-	if (tier < 100) {
+	if (materialName == "LMD") {
+		appendTo = `#LMDList`;
+	}
+	else if (tier < 100) {
 		appendTo = `#tier${tier}MatsList`;
-	} 
+	}
 	else if (tier < 200) {
 		let chipPackWords = materialName.split(' ');
 		chipPackWords.shift();
@@ -767,7 +719,7 @@ function buildMaterialRow(materialName) {
 		if (nextTier) {
 			nextTier.forEach(checkIfCraftable);
 		}
-		// checkRecipeCanComplete(materialName);
+		checkRecipeCanComplete(materialName);
 	})
 }
 
@@ -806,7 +758,7 @@ function checkIfCraftable(craftableName) {
 	const craftableRecipe = UPGRADE_MATERIALS[craftableName].recipe;
 	const craftableEntry = COOKBOOK_DATABASE.getMaterials(craftableName)[craftableName];
 	
-	if(!craftableEntry || Object.keys(craftableRecipe).length === 0) {
+	if(!craftableEntry || getKeyLength(craftableRecipe) === 0) {
 		return;
 	}
 	if (craftableEntry.needed > 0) {
@@ -818,7 +770,7 @@ function checkIfCraftable(craftableName) {
 				metRequirements ++;
 			}
 		}
-		if (metRequirements === Object.keys(craftableRecipe).length) {
+		if (metRequirements === getKeyLength(craftableRecipe)) {
 			$(`#${htmlName}MatRow`).removeClass('listRowComplete');
 			$(`#${htmlName}MatRow`).addClass('listRowCanComplete');
 		}
@@ -904,7 +856,6 @@ return {
 		recipeSectionInit();
 	},
 	ingredientsToRecipe: ingredientsToRecipe,
-	selectedRecipes: selectedRecipes,
 }
 
 }();

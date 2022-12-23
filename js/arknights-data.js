@@ -47,26 +47,58 @@ class OperatorData {
 	constructor(opClass, rarity, recipes={}, skillNames=[]) {
 		this.opClass = opClass;
 		this.rarity = rarity;
-        this.recipes = recipes;
         this.skillNames = skillNames;
-
 		this.id = operatorId++;
 
-		// Calculate upgrade chips needed
+        this.recipes = {};
+        // Calculate skill summaries:
+        if (rarity >= 3) {
+            for (let i = 2; i <= 7; i++) {
+                this.recipes[i] = {};
+            }
+            this.recipes[2]['Skill Summary 1'] = SKILL_SUMMARIES[this.rarity][2];
+            this.recipes[3]['Skill Summary 1'] = SKILL_SUMMARIES[this.rarity][3];
+            this.recipes[4]['Skill Summary 2'] = SKILL_SUMMARIES[this.rarity][4];
+            this.recipes[5]['Skill Summary 2'] = SKILL_SUMMARIES[this.rarity][5];
+            this.recipes[6]['Skill Summary 2'] = SKILL_SUMMARIES[this.rarity][6];
+            this.recipes[7]['Skill Summary 3'] = SKILL_SUMMARIES[this.rarity][7];
+
+            if (rarity >= 4) {
+                for(let i = 1; i <= 3; i++) {
+                    this.recipes[10 + i] = {};
+                    this.recipes[20 + i] = {};
+                    this.recipes[10 + i]['Skill Summary 3'] = SKILL_SUMMARIES[this.rarity][i + 7];
+                    this.recipes[20 + i]['Skill Summary 3'] = SKILL_SUMMARIES[this.rarity][i + 7];
+
+                    if ((30 + i) in recipes) {
+                        this.recipes[30 + i] = {};
+                        this.recipes[30 + i]['Skill Summary 3'] = SKILL_SUMMARIES[this.rarity][i + 7];
+                    }
+                }
+            }
+        }
+
+		// Calculate rank up extras
 		const classString = this.opClass_toString(opClass);
 		if (rarity >= 4) {
+            this.recipes[101] = {};
+            this.recipes[101]['LMD'] = RANK_PROMO_COST[this.rarity][0];
 			this.recipes[101][`${classString} Chip`] = (rarity - 1);
+            if (rarity == 4) {
+                this.recipes[102] = {};
+                this.recipes[102]['LMD'] = RANK_PROMO_COST[this.rarity][1];
+                this.recipes[102][`${classString} Chip Pack`] = 5;
+            }
+            else if (rarity >= 5) {
+                this.recipes[102] = {};
+                this.recipes[102]['LMD'] = RANK_PROMO_COST[this.rarity][1];
+                this.recipes[102][`${classString} Dualchip`] = this.rarity - 2;
+            }
 		}
-		if (rarity == 4) {
-            this.recipes[102] = {};
-			this.recipes[102][`${classString} Chip Pack`] = 5;
-		}
-		else if (rarity == 5) {
-			this.recipes[102][`${classString} Dualchip`] = 3;
-		}
-		else if (rarity == 6) {
-			this.recipes[102][`${classString} Dualchip`] = 4;
-		}
+        
+        for(const recipeIdx in recipes) {
+            Object.assign(this.recipes[recipeIdx], recipes[recipeIdx]);
+        }
 	}
 
 	createRarityString() {
@@ -104,17 +136,6 @@ class OperatorData {
         }
         else {
             return `Skill ${skillIdx}`
-        }
-    }
-
-    getSkillSummaryCount(skillLvl) {
-        const summaries = SKILL_SUMMARIES[this.rarity];
-
-        if (summaries.length >= skillLvl) {
-            return SKILL_SUMMARIES[this.rarity][skillLvl];
-        }
-        else {
-            return 0;
         }
     }
 }
