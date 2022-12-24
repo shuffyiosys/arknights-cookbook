@@ -1387,7 +1387,7 @@ const OPERATOR_DATA = {
     31: {"Orirock Concentration": 4,"Grindstone": 7}, 32: {"Grindstone Pentahydrate": 4,"White Horse Kohl": 9}, 33: {"D32 Steel": 6,"Polymerized Gel": 6},
     101: {"Orirock Cube": 12,"Polyketon": 4},"102":{"Polymerization Preparation": 4,"Keton Colloid": 5}},
     []),
-"Suzuran":  new OperatorData(CLASS.MEDIC, 6, { 3: {"Ester": 6,"Oriron Shard": 4}, 4: {"Oriron": 4}, 5: {"Polyketon": 4,"Orirock Cube": 5}, 6: {"RMA70-12": 4}, 7: {"Oriron Cluster": 3,"Grindstone": 5},
+"Suzuran":  new OperatorData(CLASS.SUPPORTER, 6, { 3: {"Ester": 6,"Oriron Shard": 4}, 4: {"Oriron": 4}, 5: {"Polyketon": 4,"Orirock Cube": 5}, 6: {"RMA70-12": 4}, 7: {"Oriron Cluster": 3,"Grindstone": 5},
     11: {"Incandescent Alloy Block": 4,"RMA70-12": 5}, 12: {"Polymerized Gel": 4,"Orirock Concentration": 10}, 13: {"D32 Steel": 6,"Oriron Block": 5},
     21: {"Keton Colloid": 4,"Coagulating Gel": 4}, 22: {"Oriron Block": 4,"Incandescent Alloy Block": 7}, 23: {"Bipolar Nanoflake": 6,"Grindstone Pentahydrate": 5},
     31: {"White Horse Kohl": 4,"Aketon": 8}, 32: {"Optimized Device": 3,"Oriron Block": 6}, 33: {"Bipolar Nanoflake": 6,"Keton Colloid": 5},

@@ -38,29 +38,12 @@ a {
 	padding: 0px;
 }
 
+.mainContainer > div {
+	margin: 0;
+}
+
 #toggleSearchBtn {
 	margin-left: 16px;
-}
-
-@media screen and (max-width: 992px) {
-	#page-header {
-		height: 88px;
-	}
-
-	.mainContainer {
-		margin-top: 92px;
-	}
-
-	body {
-		height: initial;
-		overflow: auto;
-	}
-}
-
-@media screen and (min-width: 992px) {
-	#toggleSearchBtn {
-		display: none;
-	}
 }
 
 .inner-flexbox {
@@ -75,6 +58,7 @@ a {
 	border-radius: 6px;
 	overflow: hidden;
 	flex-shrink: 0;
+	
 }
 
 .op-entry-row {
@@ -120,6 +104,12 @@ div.col-sm-8 > div > div.stats-card {
 }
 
 /* Search side of the page --------------------------------------------------*/
+#searchContainer {
+	height: 100%;
+	padding: 10px; 
+	overflow: auto;
+}
+
 .searchSection {
 	border-top: 2px solid #444;
 }
@@ -147,26 +137,35 @@ div.col-sm-8 > div > div.stats-card {
 
 /* Recipe side of the page --------------------------------------------------*/
 #recipeContainer {
+	height: 100%;
 	display: flex;
 	flex-flow: column;
-	padding-right: 0px;
 }
 
 #recipeContainerHeader {
 	height: 40px;
 	padding-top: 4px;
-	padding-right: 10px;
 	margin-bottom: 8px;
 }
 
 #recipeContainerBody {
-	flex-grow : 1;
-	padding-right: 10px;
+	display: flex;
+	align-items: stretch;
+	height: 100%;
 }
 
-#materialListContainer {
-	margin-top: 32px;
-	border-top: 2px solid #DDD;
+#recipeContainerBody > div {
+	padding: 8px;
+	overflow-y: auto;
+	width: 50%;
+}
+
+.notFinalizedNotification { 
+	width: 24px; 
+	height:24px; 
+	border-radius:12px; 
+	background: #F00; 
+	text-align: center;
 }
 
 .operatorRecipeTable {
@@ -195,7 +194,6 @@ div.col-sm-8 > div > div.stats-card {
 }
 
 .materialTableList {
-	table-layout: fixed;
 	width: 100%;
 }
 
@@ -267,4 +265,61 @@ div.col-sm-8 > div > div.stats-card {
 .materialIconSm {
 	width: 48px;
 	height: 48px;
+}
+
+@media screen and (max-width: 1900px) {
+	#operators-list {
+		min-width: 680px;
+		max-width: 680px;
+	}
+
+	#recipeContainerBody > div {
+		width: auto;
+	}
+}
+
+@media screen and (max-width: 1580px) {
+	#operators-list {
+		min-width: 680px;
+		max-width: 680px;
+	}
+
+	#recipeContainerBody > div {
+		width: auto;
+	}
+
+	#recipeContainerBody {
+		display: block;
+		overflow-y: auto;
+	}
+
+	#recipeContainerBody > div {
+		width: 100%;
+	}
+
+	#operators-list {
+		min-width: none;
+		max-width: none;
+	}
+}
+
+@media screen and (max-width: 992px) {
+	#page-header {
+		height: 88px;
+	}
+
+	.mainContainer {
+		margin-top: 92px;
+	}
+
+	body {
+		height: initial;
+		overflow: auto;
+	}
+}
+
+@media screen and (min-width: 992px) {
+	#toggleSearchBtn {
+		display: none;
+	}
 }

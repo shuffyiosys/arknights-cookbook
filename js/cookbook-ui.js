@@ -14,13 +14,13 @@ const getKeyLength = x => Object.keys(x).length;
 
 /* General Hanlders **********************************************************/
 function generalUiInit() {
-	$(`#clearAllSelectedBtn`).click(() => {
-		COOKBOOK_DATABASE.deleteAllOperators();
+	$(`#deleteAllDataBtn`).click(() => {
+		COOKBOOK_DATABASE.deleteAll();
 		$(`#operators-list`).empty();
 		updateMaterialList();
 	});
-	$(`#deleteAllDataBtn`).click(() => {
-		COOKBOOK_DATABASE.deleteAll();
+	$(`#clearOpsDataBtn`).click(() => {
+		COOKBOOK_DATABASE.deleteAllOperators();
 		$(`#operators-list`).empty();
 		updateMaterialList();
 	});
@@ -249,12 +249,18 @@ function buildOperatorCard(operatorName, entry) {
 	let gamePressName = operatorName.toLowerCase().replace(/'| the|\./g, '').replaceAll(' ', '-');
 	const divId = `${operatorData.rarity}-${htmlName}-card`;
 	
+	let notFinalizedHtml = (entry.finalized === false) ? `
+		<div class="notFinalizedNotification" title="Operator recipe hasn't been set">
+			<i class="bi bi-exclamation-circle"></i>
+		</div>` : ``;
 
 	let html = 
-		`<div id="${divId}" class="container-fluid op-entry-card" style="background: #444; width: 720px;" data-sort="${operatorData.id}">
+		`<div id="${divId}" class="container-fluid op-entry-card" data-sort="${operatorData.id}">
 			<div class="row gx-1 justify-content op-entry-row op-card-header">
 				<div class="col-10 inner-flexbox" >
-					<div class="materialIconBase" style="background-image: url('${opIconsPath}${iconName}_icon.webp'); background-color: ${rarityBackground}"></div>
+					<div class="materialIconBase" style="background-image: url('${opIconsPath}${iconName}_icon.webp'); background-color: ${rarityBackground}">
+						${notFinalizedHtml}
+					</div>
 					<div style="width: 160px;">${operatorName}<br>${operatorData.createRarityString()}</div>
 					<div style="width: 120px;"><img src="${classIconsPath}${operatorData.opClass_toString()}.webp" alt="" height="48px">${operatorData.opClass_toString()}</div>
 					<div>
@@ -274,12 +280,17 @@ function buildOperatorCard(operatorName, entry) {
 			</div>`;
 
 	$(`#operators-list`).append(html);
+	$(`#${divId} > div > div > div > a`).click(e => e.stopPropagation());
 
 	if(entry.finalized === false) {
 		buildOpCardStats(operatorName, entry);
 	}
 	else {
 		initOpRecipes(operatorName);
+	}
+
+	if (entry.cardExpanded === true) {
+		$($(`#${divId}`).children()[1]).toggle();
 	}
 
 	$($(`#${divId} .row .col-2 button`)).click(() => {
@@ -294,6 +305,9 @@ function buildOperatorCard(operatorName, entry) {
 
 	$($(`#${divId}`).children()[0]).click(() => {
 		$($(`#${divId}`).children()[1]).toggle();
+		let operatorEntry = COOKBOOK_DATABASE.getOperator(operatorName);
+		operatorEntry.cardExpanded = $($(`#${divId}`).children()[1]).is(`:visible`);
+		COOKBOOK_DATABASE.updateOperator(operatorName, operatorEntry);
 	});
 
 	$($(`#${divId}`).children()[1]).toggle();
@@ -442,9 +456,18 @@ function buildOpRecipes(operatorName, opCardStatsQuery) {
 		addOperatorRecipe(baseValues[i], goalValues[i], operatorName, RECIPE_TYPES[RECIPE_TYPES_NAMES[i]]);
 	}
 
+	const operatorData = OPERATOR_DATA[operatorName];
 	let operatorEntry = COOKBOOK_DATABASE.getOperator(operatorName);
 	operatorEntry.finalized = true;
+	$(`#${operatorData.rarity}-${htmlName}-card > div > div > div > .notFinalizedNotification`).remove();
 	COOKBOOK_DATABASE.updateOperator(operatorName, operatorEntry);
+
+	const ingredientsList = COOKBOOK_DATABASE.getMaterialList();
+	for(const ingredientName in ingredientsList) {
+		if (getKeyLength(UPGRADE_MATERIALS[ingredientName].recipe) > 0) {
+			checkRecipeCanComplete(ingredientName);
+		}
+	}
 }
 
 function updateOpStat(operatorName, query, statIdx) {
@@ -545,7 +568,6 @@ function buildRecipeRow(operatorName, recipeId, recipeType) {
 		recipeHtml += `<td>${createMaterialIconHtml(ingredientName, ICON_SIZE.SMALL)}</td>`
 		
 		if (ingredientName in ingredientsToRecipe === false) {
-			console.log(ingredientName)
 			ingredientsToRecipe[ingredientName] = new Set();
 		}
 		ingredientsToRecipe[ingredientName].add(`${recipeHtmlId}`);
@@ -599,8 +621,6 @@ function handleRecipeComplete(event, operatorName) {
 }
 
 function checkRecipeCanComplete(materialName) {
-	console.log(materialName, ingredientsToRecipe[materialName])
-
 	if((materialName in ingredientsToRecipe) == false) {
 		return;
 	}

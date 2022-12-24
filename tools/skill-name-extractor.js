@@ -1,5 +1,5 @@
-numSkills = $('div.va-collapsible-content.mw-collapsible.mw-collapsed.mw-made-collapsible > table > tbody').length
-skillEntries = $('div.va-collapsible-content.mw-collapsible.mw-collapsed.mw-made-collapsible > table > tbody');
+numSkills = $('div.mw-collapsible.mw-collapsed.mw-made-collapsible > table > tbody').length
+skillEntries = $('div.mw-collapsible.mw-collapsed.mw-made-collapsible > table > tbody');
 skillNames = []
 for(let i = 0; i < numSkills; i++) {
 	skillNames.push(skillEntries[i].children[0].children[1].children[0].innerText)

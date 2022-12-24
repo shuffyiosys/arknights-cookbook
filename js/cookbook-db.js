@@ -48,6 +48,7 @@ class OperatorEntry {
 		this.skillMasteryGoals = [0, 0, 0];
 
 		this.finalized = false;
+		this.cardExpanded = false;
 		this.completedRecipes = {};
 	}
 }
