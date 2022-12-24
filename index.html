@@ -10,7 +10,7 @@
 
 	<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/css/bootstrap.min.css" rel="stylesheet"
 		integrity="sha384-1BmE4kWBq78iYhFldvKuhfTAU6auU8tT94WrHftjDbrCEXSU1oBoqyl2QvZ6jIW3" crossorigin="anonymous">
-		<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.8.1/font/bootstrap-icons.css">
+	<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.2/font/bootstrap-icons.css">
 	<link rel="stylesheet" href="./css/app.css">
 
 	<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.1.3/dist/js/bootstrap.bundle.min.js"
@@ -18,23 +18,26 @@
 		defer></script>
 	<script src="https://code.jquery.com/jquery-3.6.0.min.js"
 		integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous" defer></script>
-	<script src="./js/upgrade-materials.js" defer></script>
-	<script src="./js/operators.js" defer></script>
-	<script src="./js/app.js" defer></script>
+	<script src="./js/arknights-data.js" defer></script>
+	<script src="./js/cookbook-db.js" defer></script>
+	<script src="./js/cookbook-ui.js" defer></script>
+	<script src="./js/cookbook-main.js" defer></script>
 
 </head>
 
 <body>
-
 	<div class="fixed-top" id="page-header">
 		<div class="headerFlexRow">
 			<div style="flex-grow: 1;">
 				<h1>Arknights Operator Cookbook</h1>
 			</div>
 			<div>
+				<button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#deleteAllModal" title="Delete everything"> <i class="bi bi-trash"></i> </button>
+				<button type="button" class="btn btn-danger" data-bs-toggle="modal" data-bs-target="#clearOpsModal" title="Clear operators"><i class="bi bi-person-fill-x"></i></button>
 				<button type="button" class="btn btn-secondary" data-bs-toggle="modal" data-bs-target="#helpModal">
 					<i class="bi bi-question-circle"></i>
 				</button>
+				
 			</div>
 		</div>
 		<div class="headerFlexRow">
@@ -44,8 +47,8 @@
 		</div>
 	</div>
 	<div class="container-fluid mainContainer">
-		<div class="row justify-content-center h-100" style="margin: 0;">
-			<div class="col-lg-3 h-100" id="searchContainer" style="padding: 10px; overflow: auto;">
+		<div class="row justify-content-center h-100">
+			<div class="col-lg-3" id="searchContainer">
 				<h4>Operator Search Field</h4>
 				<div>
 					<div class="input-group mb-3">
@@ -64,48 +67,13 @@
 				<div class="overflow-auto" id="searchList">
 				</div>
 			</div>
-			<div class="col-lg-9 h-100" id="recipeContainer">
-				<div id="recipeContainerHeader">
-					<button class="btn btn-primary" type="button" data-bs-toggle="collapse"
-						data-bs-target="#materialListContainer" aria-expanded="true"
-						aria-controls="materialListContainer">
-						Show/Hide materials
-					</button>
-
-					<button type="button" class="btn btn-sm btn-danger" style="float: right; margin-left: 8px;"
-						data-bs-toggle="modal" data-bs-target="#deleteAllModal">
-						<i class="bi bi-trash"></i>
-					</button>
-					<button id="clearAllSelectedBtn" type="button" class="btn btn-sm btn-danger"
-						style="float: right;">Clear all operators</button>
-				</div>
-				<div id="recipeContainerBody" style="height: 80%; overflow: auto;">
-					<table id="selectedOpsTable" class="materialTableList">
-						<thead>
-							<tr>
-								<th scope="col"></th>
-								<th scope="col">Operator</th>
-								<th scope="col">Class</th>
-								<th scope="col">Rarity</th>
-								<th scope="col">Current Elite Rank</th>
-								<th scope="col">Current Level</th>
-								<th scope="col">Elite Rank Goal</th>
-								<th scope="col">Level Goal</th>
-								<th scope="col"></th>
-							</tr>
-							<tr style="border-top: 2px solid #DDD;">
-								<td colspan="100%"></td>
-							</tr>
-						</thead>
-					</table>
-					<div class="collapse show" id="materialListContainer">
+			<div class="col-lg-9" id="recipeContainer">
+				<div id="recipeContainerBody">
+					<div id="operators-list">
+						<h2>Selected Operators</h2>
+					</div>
+					<div id="materialListContainer">
 						<h2>Materials Needed</h2>
-						<div class="form-check form-check-inline" style="padding-top: 8px; padding-bottom: 8px;">
-							<input class="form-check-input" type="checkbox" value="" id="ignoreRecipeMatsCheckbox">
-							<label class="form-check-label" for="ignoreRecipeMatsCheckbox">
-								Ignore crafting materials
-							</label>
-						</div>
 						<div id="recipeListContainer">
 							<table id="recipeTable" class="materialTableList">
 								<thead>
@@ -142,12 +110,9 @@
 							<div class="col-lg-12 h-100">
 								<p>
 									This is a tool to keep track of which Operators you want to grow and the materials
-									needed for them
-									to be promoted. You can also input the materials you have in inventory to track
-									progress while
-									the tool will highlight materials that can be crafted from ingredients, as well as
-									which operators
-									can be promoted.
+									needed for them to be promoted. You can also input the materials you have in 
+									inventory to track progress while the tool will highlight materials that can be 
+									crafted from ingredients, as well as which operators can be promoted.
 								</p>
 							</div>
 						</div>
@@ -155,7 +120,8 @@
 						<div class="row justify-content-center h-100" style="margin: 0;">
 							<div class="col-lg-6 h-100">
 								<a href="./img/arknights-cookbook-help-1.png" target="_blank">
-									<img src="./img/arknights-cookbook-help-1.png" style="max-width:100%; object-fit:contain" alt="">
+									<img src="./img/arknights-cookbook-help-1.png"
+										style="max-width:100%; object-fit:contain" alt="">
 								</a>
 							</div>
 							<div class="col-lg-6 h-100">
@@ -172,45 +138,44 @@
 						</div>
 						<div class="row justify-content-center h-100" style="margin-top: 16px;">
 							<div class="col-lg-6 h-100">
-								<a href="./img/arknights-cookbook-help-2.png" target="_blank">
-									<img src="./img/arknights-cookbook-help-2.png" style="max-width:100%; object-fit:contain" alt="">
+								<a href="./img/selected-operators-setup.png" target="_blank">
+									<img src="./img/selected-operators-setup.png"
+										style="max-width:100%; object-fit:contain" alt="">
 								</a>
 							</div>
 							<div class="col-lg-6 h-100">
-								<p><span style="font-size: 1.5em;">①</span> - Click "Show/Hide materials" to
-									toggle the materials list</p>
-								<p><span style="font-size: 1.5em;">②</span> - Set the operator's current Elite
-									Rank</p>
-								<p><span style="font-size: 1.5em;">③</span> - Set the operator's current level
-								</p>
-								<p><span style="font-size: 1.5em;">④</span> - Set the Elite Rank you want the
-									operator to reach</p>
-								<p><span style="font-size: 1.5em;">⑤</span> - Set the level you want the
-									operator to reach</p>
-								<p><span style="font-size: 1.5em;">⑥</span> - Set the amount of materials you
-									have in inventory</p>
+								<p><span style="font-size: 1.5em;"><img src="./img/not-complete-icon.png" alt=""></span> - Operators with this mark means they haven't had their recipe's set</p>
+								<p><span style="font-size: 1.5em;">①</span> - Click on the header to expand the operator entry </p>
+								<p><span style="font-size: 1.5em;">②</span> - Fill out the operator's current stats</p>
+								<p><span style="font-size: 1.5em;">③</span> - Once done, click the "Generate" button</p>
+							</div>
+						</div>
+						<div class="row justify-content-center h-100" style="margin-top: 16px;">
+							<div class="col-lg-6 h-100">
+								<a href="./img/selected-operators-recipe-list.png" target="_blank">
+									<img src="./img/selected-operators-recipe-list.png"
+										style="max-width:100%; object-fit:contain" alt="">
+								</a>
+							</div>
+							<div class="col-lg-6 h-100">
+								<p><span style="font-size: 1.5em;">①</span> - Click on the checkbox to mark the recipe as done</p>
+								<p><span style="font-size: 1.5em;">②</span> - If a recipe can complete, it'll be highlighted</p>
 								<p>
 									As you fill out the numbers, various materials or operators will be
 									highlighted to show what you can do.
 								</p>
 								<p class="listRowComplete">
-									This means you have enough of that material to complete this list or the
-									operator has met its Elite Rank and level goal
+									This means the recipe is completed or you gathered enough materials to complete all
+									recipes that need it.
 								</p>
 								<p class="listRowCanComplete">
-									This means you have enough ingredients to craft the rest of the materials
-									you need or the operator can be promoted
+									This means you can complete the recipe highlighted or can craft the material.
 								</p>
 							</div>
 						</div>
 					</div>
 					<div class="row justify-content-center h-100" style="margin: 0;">
 						<div class="col-lg-12 h-100">
-							<p>
-								If you want to hide materials used for recipes, i.e, you just want to know
-								what materials you need to promote
-								the operators, check the "Ignore materials from recipe" checkbox
-							</p>
 							<p>
 								Please note this page saves what you've entered, but it won't carry across browsers
 								or computers.
@@ -247,6 +212,24 @@
 				<div class="modal-footer">
 					<button type="button" class="btn btn-danger" data-bs-dismiss="modal"
 						id="deleteAllDataBtn">Yes</button>
+					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+				</div>
+			</div>
+		</div>
+	</div>
+	<div class="modal fade" id="clearOpsModal" tabindex="-1" aria-labelledby="clearOpsModalLabel" aria-hidden="true">
+		<div class="modal-dialog">
+			<div class="modal-content">
+				<div class="modal-header">
+					<h5 class="modal-title" id="clearOpsModalLabel">Clear all operators?</h5>
+					<button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+				</div>
+				<div class="modal-body">
+					This will clear out the operator list
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-danger" data-bs-dismiss="modal"
+						id="clearOpsDataBtn">Yes</button>
 					<button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
 				</div>
 			</div>

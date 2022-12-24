@@ -38,32 +38,78 @@ a {
 	padding: 0px;
 }
 
+.mainContainer > div {
+	margin: 0;
+}
+
 #toggleSearchBtn {
 	margin-left: 16px;
 }
 
-@media screen and (max-width: 992px) {
-	#page-header {
-		height: 88px;
-	}
-
-	.mainContainer {
-		margin-top: 92px;
-	}
-
-	body {
-		height: initial;
-		overflow: auto;
-	}
+.inner-flexbox {
+	display: flex; 
+	flex-direction: row;
 }
 
-@media screen and (min-width: 992px) {
-	#toggleSearchBtn {
-		display: none;
-	}
+.op-entry-card {
+	padding: 0;
+	margin-top: 8px;
+	margin-bottom: 8px;
+	border-radius: 6px;
+	overflow: hidden;
+	flex-shrink: 0;
+	
+}
+
+.op-entry-row {
+	margin: 0;
+	font-size: 1em;
+}
+
+.op-card-header {
+	background: #555;
+	cursor: pointer;
+}
+
+.op-card-content {
+	background: #AAA;
+	color: #111; 
+}
+
+div.stats-card {
+	background: #DDD; 
+	padding: 10px;
+	margin: 0;
+}
+
+div.stats-card label {
+	width: 60px;
+}
+
+div.stats-card input {
+	width: 56px;
+	height: 24px;
+}
+
+div.op-entry-card > div:nth-child(2) div{
+	padding: 4px;
+}
+
+div.col-sm-4 > div > div.stats-card {
+	width: 50%;
+}
+
+div.col-sm-8 > div > div.stats-card {
+	width: 25%;
 }
 
 /* Search side of the page --------------------------------------------------*/
+#searchContainer {
+	height: 100%;
+	padding: 10px; 
+	overflow: auto;
+}
+
 .searchSection {
 	border-top: 2px solid #444;
 }
@@ -80,6 +126,7 @@ a {
 .searchEntry {
 	cursor: pointer;
 	margin-top: 5px;
+	margin-right: 5px;
 	margin-bottom: 5px;
 	width: calc(100% - 8px);
 }
@@ -90,27 +137,63 @@ a {
 
 /* Recipe side of the page --------------------------------------------------*/
 #recipeContainer {
+	height: 100%;
 	display: flex;
 	flex-flow: column;
-	padding-right: 0px;
 }
 
 #recipeContainerHeader {
-	height: 48px;
+	height: 40px;
+	padding-top: 4px;
 	margin-bottom: 8px;
 }
 
 #recipeContainerBody {
-	flex-grow : 1;
+	display: flex;
+	align-items: stretch;
+	height: 100%;
 }
 
-#materialListContainer {
-	margin-top: 32px;
-	border-top: 2px solid #DDD;
+#recipeContainerBody > div {
+	padding: 8px;
+	overflow-y: auto;
+	width: 50%;
+}
+
+.notFinalizedNotification { 
+	width: 24px; 
+	height:24px; 
+	border-radius:12px; 
+	background: #F00; 
+	text-align: center;
+}
+
+.operatorRecipeTable {
+	width: 100%;
+}
+
+.operatorRecipeTable > tr {
+	width: 100%;
+	display: inline-block;
+}
+
+.operatorRecipeTable > tr > td:first-child {
+	width: 200px;
+}
+
+.operatorRecipeTable > tr > td:nth-child(2) {
+	width: 72px;
+	padding-right: 12px;
+	text-align: right;
+}
+
+.operatorRecipeTable > tr > td:nth-child(2n + 4) {
+	width: 40px;
+	padding-right: 12px;
+	text-align: right;
 }
 
 .materialTableList {
-	table-layout: fixed;
 	width: 100%;
 }
 
@@ -159,12 +242,84 @@ a {
 	width: 72px;
 }
 
-.materialIcon {
+.headerButtons {
+	float: right;
+	margin-left: 8px;
+}
+
+.materialIconBase {
 	width: 64px;
 	height: 64px;
+	margin-right: 12px;
 	border-radius: 32px;
-
 	background-size: contain;
 	background-position: center center;
 	background-repeat: no-repeat;
+}
+
+.materialIconMd {
+	width: 64px;
+	height: 64px;
+}
+
+.materialIconSm {
+	width: 48px;
+	height: 48px;
+}
+
+@media screen and (max-width: 1900px) {
+	#operators-list {
+		min-width: 680px;
+		max-width: 680px;
+	}
+
+	#recipeContainerBody > div {
+		width: auto;
+	}
+}
+
+@media screen and (max-width: 1580px) {
+	#operators-list {
+		min-width: 680px;
+		max-width: 680px;
+	}
+
+	#recipeContainerBody > div {
+		width: auto;
+	}
+
+	#recipeContainerBody {
+		display: block;
+		overflow-y: auto;
+	}
+
+	#recipeContainerBody > div {
+		width: 100%;
+	}
+
+	#operators-list {
+		min-width: none;
+		max-width: none;
+	}
+}
+
+@media screen and (max-width: 992px) {
+	#page-header {
+		height: 88px;
+	}
+
+	.mainContainer {
+		margin-top: 92px;
+	}
+
+	body {
+		height: initial;
+		overflow: auto;
+	}
+}
+
+@media screen and (min-width: 992px) {
+	#toggleSearchBtn {
+		display: none;
+	}
 }
