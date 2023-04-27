@@ -155,6 +155,7 @@ const COOKBOOK_DATABASE = function() {
 		if (entry.needed <= 0) { entry.needed = 0; }
 
 		const matData = UPGRADE_MATERIALS[materialName];
+		
 		for (const ingredientName in matData.recipe) {
 			const ingredientNeeded = matData.recipe[ingredientName] * amount;
 			updateMaterialRecipe(ingredientName, ingredientNeeded);

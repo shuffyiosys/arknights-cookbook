@@ -1,5 +1,137 @@
 "use strict";
 
+/* Material Data *************************************************************/
+class Material {
+	constructor(tier, recipe={}) {
+		this.tier = tier;
+		this.recipe = recipe;
+	}
+};
+
+const UPGRADE_MATERIALS = {
+    // Tier 0
+    'LMD': new Material(1),
+
+	// Tier 1
+	'Orirock': new Material(1),
+	'Oriron Shard': new Material(1),
+	'Diketon': new Material(1),
+	'Sugar Substitute': new Material(1),
+	'Ester': new Material(1),
+	'Damaged Device': new Material(1),
+
+	// Tier 2
+	'Orirock Cube': new Material(2, {'Orirock': 3}),
+	'Oriron': new Material(2, {'Oriron Shard': 3}),
+	'Polyketon': new Material(2, {'Diketon': 3}),
+	'Sugar': new Material(2, {'Sugar Substitute': 3}),
+	'Polyester': new Material(2, {'Ester': 3}),
+	'Device': new Material(2, {'Damaged Device': 3}),
+
+	// Tier 3
+	'Orirock Cluster': new Material(3, {'Orirock Cube': 5}),
+	'Oriron Cluster': new Material(3, {'Oriron': 4}),
+	'Aketon':new Material(3, {'Polyketon': 4}),
+	'Sugar Pack': new Material(3, {'Sugar': 4}),
+	'Polyester Pack': new Material( 3, {'Polyester': 4}),
+	'Integrated Device': new Material(3, {'Device': 4}),
+	'Grindstone': new Material(3),
+	'RMA70-12': new Material(3),
+	'Manganese Ore': new Material(3),
+	'Loxic Kohl': new Material(3),
+	'Incandescent Alloy': new Material(3),
+	'Crystalline Component': new Material(3),
+	'Coagulating Gel': new Material(3),
+	'Compound Lubricant': new Material(3),
+	'Compound Cutting Fluid': new Material(3),
+	'Semi-Synthetic Solvent': new Material(3),
+	'Transmuted Salt': new Material(3),
+
+	// Tier 4
+	'Orirock Concentration':    new Material(4, {'Orirock Cluster': 5}),
+	'Oriron Block':             new Material(4, {'Oriron Cluster': 2, 'Integrated Device': 1, 'Polyester Pack': 1}),
+	'Keton Colloid':            new Material(4, {'Aketon': 2, 'Sugar Pack': 1, 'Manganese Ore': 1}),
+	'Sugar Lump':               new Material(4, {'Sugar Pack': 2, 'Oriron Cluster': 1, 'Manganese Ore': 1}),
+	'Polyester Lump':           new Material(4, {'Polyester Pack': 2, 'Aketon': 1, 'Loxic Kohl': 1}),
+	'Optimized Device':         new Material(4, {'Integrated Device': 1, 'Orirock Cluster': 2, 'Grindstone': 1}),
+	'Grindstone Pentahydrate':  new Material(4, {'Grindstone': 1, 'Oriron Cluster': 1, 'Integrated Device': 1}),
+	'RMA70-24':                 new Material(4, {'RMA70-12': 1, 'Orirock Cluster': 1, 'Aketon': 1}),
+	'Manganese Trihydrate':     new Material(4, {'Manganese Ore': 2, 'Polyester Pack': 1, 'Loxic Kohl': 1}),
+	'White Horse Kohl':         new Material(4, {'Loxic Kohl': 1, 'Sugar Pack': 1, 'RMA70-12': 1}),
+	'Incandescent Alloy Block': new Material(4, {'Integrated Device': 1, 'Grindstone': 1, 'Incandescent Alloy': 1}),
+	'Crystalline Circuit':      new Material(4, {'Crystalline Component': 1, 'Coagulating Gel': 1, 'Incandescent Alloy': 1}),
+	'Polymerized Gel':          new Material(4, {'Oriron Cluster': 1, 'Coagulating Gel': 1, 'Incandescent Alloy': 1}),
+	'Pure Lubricant':           new Material(4),
+	'Refined Solvent':          new Material(4),
+	'Cutting Fluid Solution':   new Material(4, {'Compound Cutting Fluid': 1, 'Crystalline Component': 1, 'RMA70-12': 1}),
+	'Transmuted Salt Agglomerate': new Material(4, {'Semi-Synthetic Solvent': 1, 'Sugar Pack': 1, 'Transmuted Salt': 1}),
+
+	// Tier 5
+	'Bipolar Nanoflake':            new Material(5, {'Optimized Device': 1, 'White Horse Kohl': 2}),
+	'Crystalline Electronic Unit':  new Material(5, {'Crystalline Circuit': 1, 'Polymerized Gel': 2, 'Incandescent Alloy Block': 1}),
+	'D32 Steel':                    new Material(5, {'Manganese Trihydrate': 1, 'Grindstone Pentahydrate': 1, 'RMA70-24': 1}),
+	'Polymerization Preparation':   new Material(5, {'Orirock Concentration': 1, 'Oriron Block': 1, 'Keton Colloid': 1}),
+	'Nucleic Crystal Sinter':       new Material(5, {'Transmuted Salt Agglomerate': 1, 'Cutting Fluid Solution': 1, 'Refined Solvent': 2}),
+
+	// Chips
+	'Caster Chip': new Material(102),
+	'Defender Chip': new Material(102),
+	'Guard Chip': new Material(102),
+	'Medic Chip': new Material(102),
+	'Sniper Chip': new Material(102),
+	'Specialist Chip': new Material(102),
+	'Supporter Chip': new Material(102),
+	'Vanguard Chip': new Material(102),
+
+	'Caster Chip Pack': new Material(104),
+	'Defender Chip Pack': new Material(104),
+	'Guard Chip Pack': new Material(104),
+	'Medic Chip Pack': new Material(104),
+	'Sniper Chip Pack': new Material(104),
+	'Specialist Chip Pack': new Material(104),
+	'Supporter Chip Pack': new Material(104),
+	'Vanguard Chip Pack': new Material(104),
+	
+	'Caster Dualchip': new Material(105, {'Caster Chip Pack': 2}),
+	'Defender Dualchip': new Material(105, {'Defender Chip Pack': 2}),
+	'Guard Dualchip': new Material(105, {'Guard Chip Pack': 2}),
+	'Medic Dualchip': new Material(105, {'Medic Chip Pack': 2}),
+	'Sniper Dualchip': new Material(105, {'Sniper Chip Pack': 2}),
+	'Specialist Dualchip': new Material(105, {'Specialist Chip Pack': 2}),
+	'Supporter Dualchip': new Material(105, {'Supporter Chip Pack': 2}),
+	'Vanguard Dualchip': new Material(105, {'Vanguard Chip Pack': 2}),
+
+	// Skills
+	'Skill Summary 1': new Material(202),
+	'Skill Summary 2': new Material(203, {'Skill Summary 1': 3}),
+	'Skill Summary 3': new Material(204, {'Skill Summary 2': 3}),
+};
+
+// This is to help speed up checking if some mats can be crafted
+const MATERIAL_TIER_INDEX = {
+	1: new Set(["Orirock", "Oriron Shard", "Diketon", "Sugar Substitute", "Ester", "Damaged Device"]),
+	2: new Set(["Orirock Cube", "Oriron", "Polyketon", "Sugar", "Polyester", "Device", "Orirock Cluster"]),
+	3: new Set(["Oriron Cluster", "Aketon", "Sugar Pack", "Polyester Pack", "Integrated Device", "Grindstone", "RMA70-12", "Manganese Ore", "Loxic Kohl", "Incandescent Alloy", "Crystalline Component", "Coagulating Gel", "Compound Lubricant", "Compound Cutting Fluid", "Semi-Synthetic Solvent"]),
+	4: new Set(["Orirock Concentration", "Oriron Block", "Keton Colloid", "Sugar Lump", "Polyester Lump", "Optimized Device", "Grindstone Pentahydrate", "RMA70-24", "Manganese Trihydrate", "White Horse Kohl", "Incandescent Alloy Block", "Crystalline Circuit", "Polymerized Gel", "Pure Lubricant", "Refined Solvent", "Cutting Fluid Solution"]),
+	5: new Set(["Bipolar Nanoflake", "Crystalline Electronic Unit", "D32 Steel", "Polymerization Preparation"]),
+	
+	102: new Set(["Caster Chip", "Defender Chip", "Guard Chip", "Medic Chip", "Sniper Chip", "Specialist Chip", "Supporter Chip", "Vanguard Chip"]),
+	104: new Set(["Caster Chip Pack", "Defender Chip Pack", "Guard Chip Pack", "Medic Chip Pack", "Sniper Chip Pack", "Specialist Chip Pack", "Supporter Chip Pack", "Vanguard Chip Pack"]),
+	105: new Set(["Caster Dualchip", "Defender Dualchip", "Guard Dualchip", "Medic Dualchip", "Sniper Dualchip", "Specialist Dualchip", "Supporter Dualchip", "Vanguard Dualchip"]),
+
+	201: new Set(["Skill Summary 1"]),
+	202: new Set(["Skill Summary 2"]),
+	203: new Set(["Skill Summary 3"]),
+}
+
+const tierBackgroundColors = {
+	1: `#888`,
+	2: `#DBE537`,
+	3: `#03B1F4`,
+	4: `#D5C5D8`,
+	5: `#FFCA08`,
+}
+
 /* Operator Data *************************************************************/
 const CLASS = {
 	CASTER:     1,
@@ -51,6 +183,7 @@ class OperatorData {
 		this.id = operatorId++;
 
         this.recipes = {};
+
         // Calculate skill summaries:
         if (rarity >= 3) {
             for (let i = 2; i <= 7; i++) {
@@ -98,6 +231,12 @@ class OperatorData {
         
         for(const recipeIdx in recipes) {
             Object.assign(this.recipes[recipeIdx], recipes[recipeIdx]);
+
+            for(const materialName in recipes[recipeIdx]) {
+                if ((materialName in UPGRADE_MATERIALS) == false) {
+                    console.log(`[${this.id}]WARNING: ${materialName} is not in the database!`)
+                }
+            }
         }
 	}
 
@@ -383,7 +522,7 @@ const OPERATOR_DATA = {
     101: {"Orirock Cube": 1,"Sugar": 1}},
     []),
 "Quartz": new OperatorData(CLASS.GUARD, 4, {3: {"Diketon": 3}, 4: {"Device": 1}, 5: {"Orirock Cube": 4}, 6: {"RMA70-12": 2}, 7: {"Grindstone": 2}, 
-    11: {"Agglomerated Salt": 1, "Coagulating Gel": 3}, 12: {"Grindstone Pentahydrate": 2, "White Horse Kohl": 3}, 13: {"Sintered Condensant": 2, "Optimized Device": 1}, 
+    11: {"Transmuted Salt Agglomerate": 1, "Coagulating Gel": 3}, 12: {"Grindstone Pentahydrate": 2, "White Horse Kohl": 3}, 13: {"Nucleic Crystal Sinter": 2, "Optimized Device": 1}, 
     21: {"Grindstone Pentahydrate": 1, "Semi-Synthetic Solvent": 2}, 22: {"Manganese Trihydrate": 2, "Cutting Fluid Solution": 2}, 23: {"Polymerization Preparation": 2, "Polymerized Gel": 2}, 
     101: {"LMD": 15000, "Guard Chip": 3, "Device": 1, "Polyester": 1}, 102: {"LMD": 60000, "Guard Chip Pack": 5, "Oriron Cluster": 15, "Incandescent Alloy": 9 }},
     ['ATK Up β', 'Going All-Out']),
@@ -451,9 +590,8 @@ const OPERATOR_DATA = {
     []),
 "Amiya (Guard)":  new OperatorData(CLASS.GUARD, 5, { 3: {"Damaged Device": 4}, 4: {"Orirock Cube": 4}, 5: {"Sugar": 5}, 6: {"Aketon": 4}, 7: {"Integrated Device": 2,"Sugar Pack": 3},
     11: {"Crystalline Circuit": 4,"Coagulating Gel": 4}, 12: {"Incandescent Alloy Block": 4,"RMA70-24": 5}, 13: {"Crystalline Electronic Unit": 4,"White Horse Kohl": 4},
-    21: {"Keton Colloid": 4,"Coagulating Gel": 4}, 22: {"Crystalline Circuit": 4,"Polymerized Gel": 5}, 23: {"Crystalline Electronic Unit": 4,"Optimized Device": 4},
-    101: {"": 1},"102":{"": 1}},
-    []),
+    21: {"Keton Colloid": 4,"Coagulating Gel": 4}, 22: {"Crystalline Circuit": 4,"Polymerized Gel": 5}, 23: {"Crystalline Electronic Unit": 4,"Optimized Device": 4}},
+    ['Ying Xiao - Fleeting Night', 'Ying Xiao - Shadowless']),
 "Andreana":  new OperatorData(CLASS.SNIPER, 5, { 3: {"Orirock": 10}, 4: {"Sugar": 3}, 5: {"Polyester": 5}, 6: {"Integrated Device": 3}, 7: {"Grindstone": 2,"Orirock Cluster": 4},
     11: {"Incandescent Alloy Block": 3,"RMA70-12": 3}, 12: {"Grindstone Pentahydrate": 3,"White Horse Kohl": 6}, 13: {"Bipolar Nanoflake": 4,"Keton Colloid": 3},
     21: {"Keton Colloid": 3,"Coagulating Gel": 2}, 22: {"Orirock Concentration": 3,"Grindstone Pentahydrate": 6}, 23: {"Polymerization Preparation": 4,"Incandescent Alloy Block": 4},
@@ -581,7 +719,7 @@ const OPERATOR_DATA = {
     ['Fingerfertigkeit', 'Meisterwerk']),
 "Dagda": new OperatorData(CLASS.GUARD, 5, {3: {"Diketon": 5}, 4: {"Device": 2}, 5: {"Orirock Cube": 8}, 6: {"Semi-Synthetic Solvent": 6}, 7: {"Transmuted Salt": 3, "Grindstone": 2}, 
     11: {"Incandescent Alloy Block": 3, "Transmuted Salt": 3}, 12: {"Refined Solvent": 3, "Optimized Device": 4}, 13: {"Bipolar Nanoflake": 4, "Oriron Block": 3}, 
-    21: {"Optimized Device": 2, "Polyester Pack": 4}, 22: {"Incandescent Alloy Block": 3, "Polymerized Gel": 6}, 23: {"Sintered Condensant": 4, "Orirock Concentration": 3},
+    21: {"Optimized Device": 2, "Polyester Pack": 4}, 22: {"Incandescent Alloy Block": 3, "Polymerized Gel": 6}, 23: {"Nucleic Crystal Sinter": 4, "Orirock Concentration": 3},
     101: {"LMD": 20000, "Guard Chip": 4, "Polyester": 5, "Device": 2}, 102: {"LMD": 120000, "Guard Dualchip": 3, "Incandescent Alloy Block": 7, "Orirock Cluster": 21 }},
     ['Retaliation Tactics', 'Precise Attack']),
 "Elysium":  new OperatorData(CLASS.VANGUARD, 5, { 3: {"Ester": 7}, 4: {"Oriron": 3}, 5: {"Polyketon": 4}, 6: {"Integrated Device": 3}, 7: {"Grindstone": 2,"Orirock Cluster": 4},
@@ -661,7 +799,7 @@ const OPERATOR_DATA = {
     ['Swift Strike γ', 'Dawn\'s Beacon']),
 "Harmonie": new OperatorData(CLASS.CASTER, 5, {3: {"Sugar Substitute": 7}, 4: {"Polyester": 3}, 5: {"Oriron": 4}, 6: {"Sugar Pack": 5}, 7: {"Oriron Cluster": 3, "Incandescent Alloy": 3}, 
     11: {"Cutting Fluid Solution": 3, "Grindstone": 3}, 12: {"Polymerized Gel": 3, "Grindstone Pentahydrate": 6}, 13: {"Crystalline Electronic Unit": 4, "Cutting Fluid Solution": 3}, 
-    21: {"White Horse Kohl": 3, "Coagulating Gel": 4}, 22: {"Manganese Trihydrate": 3, "RMA70-24": 5}, 23: {"Sintered Condensant": 4, "Manganese Trihydrate": 3}, 
+    21: {"White Horse Kohl": 3, "Coagulating Gel": 4}, 22: {"Manganese Trihydrate": 3, "RMA70-24": 5}, 23: {"Nucleic Crystal Sinter": 4, "Manganese Trihydrate": 3}, 
     101: {"LMD": 20000, "Caster Chip": 4, "Device": 3, "Polyester": 3}, 102: {"LMD": 12000, "Caster Dualchip": 3, "RMA70-24": 6, "Oriron Cluster": 15 }},
     ['Dexterous Steps', 'Indulging Disaster']),
 "Heavyrain":  new OperatorData(CLASS.DEFENDER, 5, { 3: {"Orirock": 10}, 4: {"Sugar": 3}, 5: {"Polyester": 5}, 6: {"Aketon": 4}, 7: {"Integrated Device": 2,"Coagulating Gel": 3},
@@ -766,7 +904,7 @@ const OPERATOR_DATA = {
     []),
 "Lunacub": new OperatorData(CLASS.SNIPER, 5, {3: {"Damaged Device": 4}, 4: {"Orirock Cube": 4}, 5: {"Sugar": 5}, 6: {"Transmuted Salt": 4}, 7: {"Crystalline Component": 3, "Loxic Kohl": 3}, 
     11: {"Orirock Concentration": 3, "Sugar Pack": 6}, 12: {"RMA70-24": 3, "Refined Solvent": 5}, 13: {"Crystalline Electronic Unit": 4, "Polymerized Gel": 3}, 
-    21: {"Cutting Fluid Solution": 3, "Coagulating Gel": 3}, 22: {"White Horse Kohl": 3, "Oriron Block": 5}, 23: {"Sintered Condensant": 4, "Keton Colloid": 3}, 
+    21: {"Cutting Fluid Solution": 3, "Coagulating Gel": 3}, 22: {"White Horse Kohl": 3, "Oriron Block": 5}, 23: {"Nucleic Crystal Sinter": 4, "Keton Colloid": 3}, 
     101: {"LMD": 20000, "Sniper Chip": 4, "Oriron": 4, "Orirock Cube": 3}, 102: {"LMD": 120000, "Sniper Dualchip": 3, "Refined Solvent": 8, "Aketon": 13 }},
     ['Hunting Time', 'Shadow Ambush']),
 "Manticore":  new OperatorData(CLASS.SPECIALIST, 5, { 3: {"Diketon": 5}, 4: {"Device": 2}, 5: {"Orirock Cluster": 8}, 6: {"Sugar Pack": 5}, 7: {"Polyester Pack": 3,"Manganese Ore": 3},
@@ -812,7 +950,7 @@ const OPERATOR_DATA = {
 "Nightmare":  new OperatorData(CLASS.CASTER, 5, { 3: {"Orirock": 10}, 4: {"Sugar": 3}, 5: {"Polyester": 5}, 6: {"Integrated Device": 3}, 7: {"Loxic Kohl": 3,"Aketon": 3},
     11: {"Manganese Trihydrate": 3,"Integrated Device": 2}, 12: {"RMA70-24": 3,"Manganese Trihydrate": 5}, 13: {"Polymerization Preparation": 4,"White Horse Kohl": 5},
     21: {"Grindstone Pentahydrate": 3,"Loxic Kohl": 4}, 22: {"Grindstone Pentahydrate": 3,"Orirock Concentration": 6}, 23: {"Bipolar Nanoflake": 4,"Polyester Lump": 4},
-    101: {"Orirock Cube": 7,"Oriron": 3},"102":{"Sugar Kump": 7,"Manganese Ore": 14}},
+    101: {"Orirock Cube": 7,"Oriron": 3},"102":{"Sugar Lump": 7,"Manganese Ore": 14}},
     []),
 "Nine-Colored Deer":  new OperatorData(CLASS.SUPPORTER, 5, { 3: {"Sugar Substitute": 7}, 4: {"Polyester": 3}, 5: {"Oriron": 4}, 6: {"Incandescent Alloy": 4}, 7: {"Oriron Cluster": 2,"Grindstone": 3},
     11: {"RMA70-24": 3,"Manganese Ore": 2}, 12: {"Keton Colloid": 3,"Refined Solvent": 5}, 13: {"Crystalline Electronic Unit": 4,"Refined Solvent": 3},
@@ -1280,9 +1418,9 @@ const OPERATOR_DATA = {
     101: {"Oriron": 8,"Orirock Cube": 5},"102":{"Bipolar Nanoflake": 4,"Oriron Block": 5}},
     []),
 "Penance": new OperatorData(CLASS.DEFENDER, 6, {3: {"Orirock": 6, "Damaged Device": 4}, 4: {"Sugar": 5}, 5: {"Polyester": 4, "Oriron": 4}, 6: {"Grindstone": 5}, 7: {"Manganese Ore": 5, "Aketon": 3}, 
-    11: {"Incandescent Alloy Block": 4, "Oriron Cluster": 6}, 12: {"Agglomerated Salt": 4, "Refined Solvent": 8}, 13: {"D32 Steel": 6, "Optimized Device": 4}, 
-    21: {"Polymerized Gel": 4, "RMA70-12": 6}, 22: {"Manganese Trihydrate": 4, "RMA70-24": 7}, 23: {"Crystalline Electronic Unit": 6, "Agglomerated Salt": 4}, 
-    31: {"Oriron Block": 4, "Loxic Kohl": 4}, 32: {"Keton Colloid": 4, "Manganese Trihydrate": 7}, 33: {"Sintered Condensant": 6, "Polymerized Gel": 4}, 
+    11: {"Incandescent Alloy Block": 4, "Oriron Cluster": 6}, 12: {"Transmuted Salt Agglomerate": 4, "Refined Solvent": 8}, 13: {"D32 Steel": 6, "Optimized Device": 4}, 
+    21: {"Polymerized Gel": 4, "RMA70-12": 6}, 22: {"Manganese Trihydrate": 4, "RMA70-24": 7}, 23: {"Crystalline Electronic Unit": 6, "Transmuted Salt Agglomerate": 4}, 
+    31: {"Oriron Block": 4, "Loxic Kohl": 4}, 32: {"Keton Colloid": 4, "Manganese Trihydrate": 7}, 33: {"Nucleic Crystal Sinter": 6, "Polymerized Gel": 4}, 
     101: {"LMD": 30000, "Defender Chip": 5, "Device": 6, "Oriron": 3}, 102: {"LMD": 180000, "Defender Dualchip": 4, "D32 Steel": 4, "White Horse Kohl": 8 }},
     ['The Final Word', 'Firm Mind', ' Hard Work', 'Overcoming Obstacles']),
 "Phantom":  new OperatorData(CLASS.SPECIALIST, 6, { 3: {"Orirock": 6,"Damaged Device": 4}, 4: {"Sugar": 5}, 5: {"Polyester": 4,"Oriron": 4}, 6: {"Manganese Ore": 6}, 7: {"Coagulating Gel": 4,"Oriron Cluster": 4},
@@ -1298,10 +1436,10 @@ const OPERATOR_DATA = {
     101: {"LMD": 30000, "Sniper Chip": 5, "Sugar": 9, "Device": 3}, 102: {"LMD": 180000, "Sniper Dualchip": 4, "Crystalline Electronic Unit": 3, "Orirock Concentration": 9 }},
     ['Iambic', 'Theme Setting', 'Sketching']),
 "Reed the Flame Shadow": new OperatorData(CLASS.MEDIC, 6, {3: {"Ester": 6, "Oriron Shard": 4}, 4: {"Oriron": 4}, 5: {"Polyketon": 4, "Orirock Cube": 5}, 6: {"RMA70-12": 4}, 7: {"Orirock Cluster": 5, "Integrated Device": 3}, 
-    11: {"Cutting Fluid Solution": 4, "Semi-Synthetic Solvent": 6}, 12: {"Grindstone Pentahydrate": 4, "Orirock Concentration": 10}, 13: {"Sintered Condensant": 6, "RMA70-24": 4}, 
-    21: {"Oriron Block": 4, "Transmuted Salt": 3}, 22: {"Agglomerated Salt": 4, "Polymerized Gel": 9}, 23: {"Polymerization Preparation": 6, "Manganese Trihydrate": 4}, 
+    11: {"Cutting Fluid Solution": 4, "Semi-Synthetic Solvent": 6}, 12: {"Grindstone Pentahydrate": 4, "Orirock Concentration": 10}, 13: {"Nucleic Crystal Sinter": 6, "RMA70-24": 4}, 
+    21: {"Oriron Block": 4, "Transmuted Salt": 3}, 22: {"Transmuted Salt Agglomerate": 4, "Polymerized Gel": 9}, 23: {"Polymerization Preparation": 6, "Manganese Trihydrate": 4}, 
     31: {"White Horse Kohl": 4, "Manganese Ore": 8}, 32: {"Cutting Fluid Solution": 4, "Optimized Device": 6}, 33: {"Bipolar Nanoflake": 6, "Refined Solvent": 5}, 
-    101: {"LMD": 30000, "Medic Chip": 5, "Sugar": 8, "Polyketon": 5}, 102: {"LMD": 18000, "Medic Chip Pack": 4, "Sintered Condensant": 3, "Orirock Concentration": 9 }},
+    101: {"LMD": 30000, "Medic Chip": 5, "Sugar": 8, "Polyketon": 5}, 102: {"LMD": 18000, "Medic Chip Pack": 4, "Nucleic Crystal Sinter": 3, "Orirock Concentration": 9 }},
     ['Swift Strike γ', 'Withered and Glorified', 'Tinders of Life']),
 "Rosa":  new OperatorData(CLASS.SNIPER, 6, { 3: {"Sugar Substitute": 5,"Diketon": 4}, 4: {"Polyester": 5}, 5: {"Oriron": 4,"Sugar": 3}, 6: {"Grindstone": 5}, 7: {"Incandescent Alloy": 4,"Manganese Ore": 5},
     11: {"Polymerized Gel": 4,"Orirock Cluster": 11}, 12: {"Incandescent Alloy Block": 4,"RMA70-24": 8}, 13: {"Polymerization Preparation": 6,"Manganese Trihydrate": 6},
@@ -1394,9 +1532,9 @@ const OPERATOR_DATA = {
     101: {"Polyester": 8,"Oriron": 4},"102":{"D32 Steel": 4,"Grindstone Pentahydrate": 8}},
     []),
 "Texas the Omertosa": new OperatorData(CLASS.SPECIALIST, 6, {3: {"Damaged Device": 4, "Ester": 4}, 4: {"Orirock Cube": 7}, 5: {"Sugar": 4, "Polyketon": 4}, 6: {"Crystalline Component": 6}, 7: {"Grindstone": 5, "Transmuted Salt": 3}, 
-    11: {"Optimized Device": 3, "Transmuted Salt": 4}, 12: {"White Horse Kohl": 4, "Crystalline Circuit": 5}, 13: {"Sintered Condensant": 6, "Keton Colloid": 4}, 
+    11: {"Optimized Device": 3, "Transmuted Salt": 4}, 12: {"White Horse Kohl": 4, "Crystalline Circuit": 5}, 13: {"Nucleic Crystal Sinter": 6, "Keton Colloid": 4}, 
     21: {"White Horse Kohl": 4, "Manganese Ore": 8}, 22: {"Orirock Concentration": 4, "Keton Colloid": 8}, 23: {"Polymerization Preparation": 6, "Refined Solvent": 6}, 
-    31: {"Agglomerated Salt": 4, "Integrated Device": 4}, 32: {"Crystalline Circuit": 4, "Polymerized Gel": 8}, 33: {"Bipolar Nanoflake": 6, "Grindstone Pentahydrate": 5}, 
+    31: {"Transmuted Salt Agglomerate": 4, "Integrated Device": 4}, 32: {"Crystalline Circuit": 4, "Polymerized Gel": 8}, 33: {"Bipolar Nanoflake": 6, "Grindstone Pentahydrate": 5}, 
     101: {"LMD": 30000, "Specialist Chip": 5, "Polyketon": 6, "Polyester": 5}, 102: {"LMD": 180000, "Specialist Dualchip": 4, "Bipolar Nanoflake": 4, "Oriron Block": 7 }},
     ['Silent Drizzle', 'Downpour', 'Torrential Sword Rain']),
 "Thorns":  new OperatorData(CLASS.GUARD, 6, { 3: {"Oriron Shard": 5,"Sugar Substitute": 4}, 4: {"Polyketon": 4}, 5: {"Device": 3,"Polyester": 3}, 6: {"Orirock Cluster": 8}, 7: {"Aketon": 3,"Loxic Kohl": 6},
@@ -1406,7 +1544,7 @@ const OPERATOR_DATA = {
     101: {"Oriron": 8,"Polyketon": 3},"102":{"Polymerization Preparation": 4,"Oriron Block": 6}},
     []),
 "Vigil": new OperatorData(CLASS.VANGUARD, 6, {3: {"Sugar Substitute": 5, "Diketon": 4}, 4: {"Polyester": 5}, 5: {"Oriron": 4, "Sugar": 3}, 6: {"Manganese Ore": 6}, 7: {"RMA70-12": 4, "Loxic Kohl": 3}, 
-    11: {"RMA70-24": 4, "Crystalline Component": 5}, 12: {"White Horse Kohl": 4, "Agglomerated Salt": 8}, 13: {"Polymerization Preparation": 6, "Crystalline Circuit": 5}, 
+    11: {"RMA70-24": 4, "Crystalline Component": 5}, 12: {"White Horse Kohl": 4, "Transmuted Salt Agglomerate": 8}, 13: {"Polymerization Preparation": 6, "Crystalline Circuit": 5}, 
     21: {"Keton Colloid": 4, "Compound Cutting Fluid": 4}, 22: {"Incandescent Alloy Block": 4, "Optimized Device": 7}, 23: {"D32 Steel": 6, "Oriron Block": 5}, 
     31: {"Refined Solvent": 4, "Incandescent Alloy": 7}, 32: {"RMA70-24": 4, "White Horse Kohl": 9}, 33: {"Crystalline Electronic Unit": 6, "Manganese Trihydrate": 4}, 
     101: {"LMD": 30000, "Vanguard Chip": 5, "Orirock Cube": 11, "Oriron": 3}, 102: {"LMD": 180000, "Vanguard Dualchip": 4, "Crystalline Electronic Unit": 3, "Optimized Device": 4 }},
@@ -1425,131 +1563,13 @@ const OPERATOR_DATA = {
     []),
 }
 
-/* Material Data *************************************************************/
-class Material {
-	constructor(tier, recipe) {
-		this.tier = tier;
-		this.recipe = recipe;
-	}
-};
-
-const UPGRADE_MATERIALS = {
-    // Tier 0
-    'LMD': new Material(1, {}),
-
-	// Tier 1
-	'Orirock': new Material(1, {}),
-	'Oriron Shard': new Material(1, {}),
-	'Diketon': new Material(1, {}),
-	'Sugar Substitute': new Material(1, {}),
-	'Ester': new Material(1, {}),
-	'Damaged Device': new Material(1, {}),
-
-	// Tier 2
-	'Orirock Cube': new Material(2, {'Orirock': 3}),
-	'Oriron': new Material(2, {'Oriron Shard': 3}),
-	'Polyketon': new Material(2, {'Diketon': 3}),
-	'Sugar': new Material(2, {'Sugar Substitute': 3}),
-	'Polyester': new Material(2, {'Ester': 3}),
-	'Device': new Material(2, {'Damaged Device': 3}),
-
-	// Tier 3
-	'Orirock Cluster': new Material(3, {'Orirock Cube': 5}),
-	'Oriron Cluster': new Material(3, {'Oriron': 4}),
-	'Aketon':new Material(3, {'Polyketon': 4}),
-	'Sugar Pack': new Material(3, {'Sugar': 4}),
-	'Polyester Pack': new Material( 3, {'Polyester': 4}),
-	'Integrated Device': new Material(3, {'Device': 4}),
-	'Grindstone': new Material(3, {}),
-	'RMA70-12': new Material(3, {}),
-	'Manganese Ore': new Material(3, {}),
-	'Loxic Kohl': new Material(3, {}),
-	'Incandescent Alloy': new Material(3, {}),
-	'Crystalline Component': new Material(3, {}),
-	'Coagulating Gel': new Material(3, {}),
-	'Compound Lubricant': new Material(3, {}),
-	'Compound Cutting Fluid': new Material(3, {}),
-	'Semi-Synthetic Solvent': new Material(3, {}),
-
-	// Tier 4
-	'Orirock Concentration':    new Material(4, {'Orirock Cluster': 5}),
-	'Oriron Block':             new Material(4, {'Oriron Cluster': 2, 'Integrated Device': 1, 'Polyester Pack': 1}),
-	'Keton Colloid':            new Material(4, {'Aketon': 2, 'Sugar Pack': 1, 'Manganese Ore': 1}),
-	'Sugar Lump':               new Material(4, {'Sugar Pack': 2, 'Oriron Cluster': 1, 'Manganese Ore': 1}),
-	'Polyester Lump':           new Material(4, {'Polyester Pack': 2, 'Aketon': 1, 'Loxic Kohl': 1}),
-	'Optimized Device':         new Material(4, {'Integrated Device': 1, 'Orirock Cluster': 2, 'Grindstone': 1}),
-	'Grindstone Pentahydrate':  new Material(4, {'Grindstone': 1, 'Oriron Cluster': 1, 'Integrated Device': 1}),
-	'RMA70-24':                 new Material(4, {'RMA70-12': 1, 'Orirock Cluster': 1, 'Aketon': 1}),
-	'Manganese Trihydrate':     new Material(4, {'Manganese Ore': 2, 'Polyester Pack': 1, 'Loxic Kohl': 1}),
-	'White Horse Kohl':         new Material(4, {'Loxic Kohl': 1, 'Sugar Pack': 1, 'RMA70-12': 1}),
-	'Incandescent Alloy Block': new Material(4, {'Integrated Device': 1, 'Grindstone': 1, 'Incandescent Alloy': 1}),
-	'Crystalline Circuit':      new Material(4, {'Crystalline Component': 1, 'Coagulating Gel': 1, 'Incandescent Alloy': 1}),
-	'Polymerized Gel':          new Material(4, {'Oriron Cluster': 1, 'Coagulating Gel': 1, 'Incandescent Alloy': 1}),
-	'Pure Lubricant':           new Material(4, {}),
-	'Refined Solvent':          new Material(4, {}),
-	'Cutting Fluid Solution':	new Material(4, {'Compound Cutting Fluid': 1, 'Crystalline Component': 1, 'RMA70-12': 1}),
-
-	// Tier 5
-	'Bipolar Nanoflake':            new Material(5, {'Optimized Device': 1, 'White Horse Kohl': 2}),
-	'Crystalline Electronic Unit':  new Material(5, {'Crystalline Circuit': 1, 'Polymerized Gel': 2, 'Incandescent Alloy Block': 1}),
-	'D32 Steel':                    new Material(5, {'Manganese Trihydrate': 1, 'Grindstone Pentahydrate': 1, 'RMA70-24': 1}),
-	'Polymerization Preparation':   new Material(5, {'Orirock Concentration': 1, 'Oriron Block': 1, 'Keton Colloid': 1}),
-
-	// Chips
-	'Caster Chip': new Material(102, {}),
-	'Defender Chip': new Material(102, {}),
-	'Guard Chip': new Material(102, {}),
-	'Medic Chip': new Material(102, {}),
-	'Sniper Chip': new Material(102, {}),
-	'Specialist Chip': new Material(102, {}),
-	'Supporter Chip': new Material(102, {}),
-	'Vanguard Chip': new Material(102, {}),
-
-	'Caster Chip Pack': new Material(104, {}),
-	'Defender Chip Pack': new Material(104, {}),
-	'Guard Chip Pack': new Material(104, {}),
-	'Medic Chip Pack': new Material(104, {}),
-	'Sniper Chip Pack': new Material(104, {}),
-	'Specialist Chip Pack': new Material(104, {}),
-	'Supporter Chip Pack': new Material(104, {}),
-	'Vanguard Chip Pack': new Material(104, {}),
-	
-	'Caster Dualchip': new Material(105, {'Caster Chip Pack': 2}),
-	'Defender Dualchip': new Material(105, {'Defender Chip Pack': 2}),
-	'Guard Dualchip': new Material(105, {'Guard Chip Pack': 2}),
-	'Medic Dualchip': new Material(105, {'Medic Chip Pack': 2}),
-	'Sniper Dualchip': new Material(105, {'Sniper Chip Pack': 2}),
-	'Specialist Dualchip': new Material(105, {'Specialist Chip Pack': 2}),
-	'Supporter Dualchip': new Material(105, {'Supporter Chip Pack': 2}),
-	'Vanguard Dualchip': new Material(105, {'Vanguard Chip Pack': 2}),
-
-	// Skills
-	'Skill Summary 1': new Material(202, {}),
-	'Skill Summary 2': new Material(203, {}),
-	'Skill Summary 3': new Material(204, {}),
-};
-
-// This is to help speed up checking if some mats can be crafted
-const MATERIAL_TIER_INDEX = {
-	1: new Set(["Orirock", "Oriron Shard", "Diketon", "Sugar Substitute", "Ester", "Damaged Device"]),
-	2: new Set(["Orirock Cube", "Oriron", "Polyketon", "Sugar", "Polyester", "Device", "Orirock Cluster"]),
-	3: new Set(["Oriron Cluster", "Aketon", "Sugar Pack", "Polyester Pack", "Integrated Device", "Grindstone", "RMA70-12", "Manganese Ore", "Loxic Kohl", "Incandescent Alloy", "Crystalline Component", "Coagulating Gel", "Compound Lubricant", "Compound Cutting Fluid", "Semi-Synthetic Solvent"]),
-	4: new Set(["Orirock Concentration", "Oriron Block", "Keton Colloid", "Sugar Lump", "Polyester Lump", "Optimized Device", "Grindstone Pentahydrate", "RMA70-24", "Manganese Trihydrate", "White Horse Kohl", "Incandescent Alloy Block", "Crystalline Circuit", "Polymerized Gel", "Pure Lubricant", "Refined Solvent", "Cutting Fluid Solution"]),
-	5: new Set(["Bipolar Nanoflake", "Crystalline Electronic Unit", "D32 Steel", "Polymerization Preparation"]),
-	
-	102: new Set(["Caster Chip", "Defender Chip", "Guard Chip", "Medic Chip", "Sniper Chip", "Specialist Chip", "Supporter Chip", "Vanguard Chip"]),
-	104: new Set(["Caster Chip Pack", "Defender Chip Pack", "Guard Chip Pack", "Medic Chip Pack", "Sniper Chip Pack", "Specialist Chip Pack", "Supporter Chip Pack", "Vanguard Chip Pack"]),
-	105: new Set(["Caster Dualchip", "Defender Dualchip", "Guard Dualchip", "Medic Dualchip", "Sniper Dualchip", "Specialist Dualchip", "Supporter Dualchip", "Vanguard Dualchip"]),
-
-	201: new Set(["Skill Summary 1"]),
-	202: new Set(["Skill Summary 2"]),
-	203: new Set(["Skill Summary 3"]),
-}
-
-const tierBackgroundColors = {
-	1: `#888`,
-	2: `#DBE537`,
-	3: `#03B1F4`,
-	4: `#D5C5D8`,
-	5: `#FFCA08`,
+function getOperatorById(idNum) {
+    let currentId = 1;
+    for(const operatorName in OPERATOR_DATA) {
+        if (currentId == idNum) {
+            return operatorName
+        }
+        currentId ++;
+    }
+    return '';
 }
